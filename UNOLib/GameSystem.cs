@@ -60,11 +60,11 @@ namespace UNOLib
                     // TODO find better implementation for card counting
                     ICard card = new ColorCard(color, symbol);
                     _allCardsDict.Add(card.ToString(), card);
-                    int i;
-                    if (symbol == ColorCardSymbols.Zero) i = 1;
-                    else i = 2;
+                    int i = symbol == ColorCardSymbols.Zero ? 1 : 2;
                     for (; i > 0; i--)
+                    {
                         _allCards.Add(card);
+                    }
                 }
             }
             foreach (WildCardSymbols symbol in Enum.GetValuesAsUnderlyingType<WildCardSymbols>())
@@ -74,7 +74,9 @@ namespace UNOLib
                 ICard card = new WildCard(CardColors.Red, symbol);
                 _allCardsDict.Add(card.ToString(), card);
                 for (int i = 0; i < 4; i++)
+                {
                     _allCards.Add(card);
+                }
             }
         }
 
@@ -99,9 +101,13 @@ namespace UNOLib
         public void CardPlay(string cardId)
         {
             if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed))
+            {
                 throw new CardCannotBePlayedException();
+            }
             else if (!_onTable.CanBePlayed(cardToBePlayed))
+            {
                 throw new CardCannotBePlayedException();
+            }
             else
             {
                 _onTable = cardToBePlayed;

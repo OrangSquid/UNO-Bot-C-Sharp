@@ -17,9 +17,9 @@ namespace UNOLib
             return card is WildCard || card.Color == Color;
         }
 
-        public override string ToString() 
+        public override string ToString()
         {
-            return String.Concat(Color.ToString(), Symbol.ToString());
+            return string.Concat(Color.ToString(), Symbol.ToString());
         }
     }
 }

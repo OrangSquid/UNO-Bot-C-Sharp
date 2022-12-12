@@ -1,29 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace UNOLib
 {
     public class PlayerDeckEnumerator : IEnumerator<ICard>
     {
-        public ICard Current
-        {
-            get
-            {
-                return _stackEnumerator.Current;
-            }
-        }
+        public ICard Current => _stackEnumerator.Current;
 
-        object IEnumerator.Current
-        {
-            get
-            {
-                return Current;
-            }
-        }
+        object IEnumerator.Current => Current;
 
         private IEnumerator<ICard> _stackEnumerator;
         private SortedDictionary<string, Stack<ICard>>.Enumerator _dictionaryEnumerator;
@@ -32,7 +15,7 @@ namespace UNOLib
         {
             // TODO Possible null dereference
             _dictionaryEnumerator = enumerator;
-            enumerator.MoveNext();
+            _ = enumerator.MoveNext();
             _stackEnumerator = enumerator.Current.Value.GetEnumerator();
         }
 
@@ -44,9 +27,11 @@ namespace UNOLib
 
         public bool MoveNext()
         {
-            if(_stackEnumerator.MoveNext())
+            if (_stackEnumerator.MoveNext())
+            {
                 return true;
-            else if(_dictionaryEnumerator.MoveNext())
+            }
+            else if (_dictionaryEnumerator.MoveNext())
             {
                 _stackEnumerator.Dispose();
                 _stackEnumerator = _dictionaryEnumerator.Current.Value.GetEnumerator();

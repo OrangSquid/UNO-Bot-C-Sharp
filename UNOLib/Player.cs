@@ -22,7 +22,7 @@ namespace UNOLib
 
         public void AddCard(ICard card)
         {
-            if(!_deck.TryGetValue(card.ToString(), out Stack<ICard>? cardsSameValue))
+            if (!_deck.TryGetValue(card.ToString(), out Stack<ICard>? cardsSameValue))
             {
                 cardsSameValue = new Stack<ICard>();
                 _deck.Add(card.ToString(), cardsSameValue);
@@ -36,20 +36,18 @@ namespace UNOLib
             {
                 throw new PlayerDoesNotHaveCardException();
             }
-            cardsSameValue.Pop();
-            if(cardsSameValue.Count == 0)
+            _ = cardsSameValue.Pop();
+            if (cardsSameValue.Count == 0)
             {
-                _deck.Remove(cardId);
+                _ = _deck.Remove(cardId);
             }
         }
 
         public ICard GetCard(string cardId)
         {
-            if (!_deck.TryGetValue(cardId, out Stack<ICard>? cardsSameValue))
-            {
-                throw new PlayerDoesNotHaveCardException();
-            }
-            return cardsSameValue.Peek();
+            return !_deck.TryGetValue(cardId, out Stack<ICard>? cardsSameValue)
+                ? throw new PlayerDoesNotHaveCardException()
+                : cardsSameValue.Peek();
         }
 
         public IEnumerator<ICard> GetEnumerator()

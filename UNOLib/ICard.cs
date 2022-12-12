@@ -3,37 +3,39 @@ namespace UNOLib
 {
     internal enum CardColors
     {
-        RED, 
-        GREEN,
-        YELLOW, 
-        BLUE
+        Red,
+        Green,
+        Yellow,
+        Blue
     }
 
     internal enum ColorCardSymbols
     {
-        ZERO,
-        ONE,
-        TWO,
-        THREE,
-        FOUR,
-        FIVE,
-        SIX,
-        SEVEN,
-        EIGHT,
-        NINE,
-        SKIP,
-        REVERSE,
-        PLUS_TWO
+        Zero,
+        One,
+        Two,
+        Three,
+        Four,
+        Five,
+        Six,
+        Seven,
+        Eight,
+        Nine,
+        Skip,
+        Reverse,
+        PlusTwo
     }
 
-    internal enum WildCardSymbols {
-        SIMPLE,
-        PLUS_FOUR
-    }
-
-    internal interface ICard
+    internal enum WildCardSymbols
     {
-        public CardColors Color { get; }
+        Simple,
+        PlusFour
+    }
+
+    public interface ICard
+    {
+        internal CardColors Color { get; }
         public bool CanBePlayed(ICard card);
+        public string ToString();
     }
 }

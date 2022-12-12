@@ -1,19 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace UNOLib
 {
-    internal class WildCard : Card
+    internal class WildCard : ICard
     {
-        public new CardColors Color { get; set; }
-        public WildCardSymbols CardSymbol { get; init; }
+        public CardColors Color { get; protected set; }
+        public WildCardSymbols Symbol { get; init; }
 
-        public override bool CanBePlayed(ICard card)
+        public WildCard(CardColors color, WildCardSymbols symbol)
         {
-            throw new NotImplementedException();
+            Color = color;
+            Symbol = symbol;
+        }
+
+        public bool CanBePlayed(ICard card)
+        {
+            return card is WildCard || card.Color == Color;
+        }
+
+        public override string ToString() 
+        {
+            return String.Concat(Color.ToString(), Symbol.ToString());
         }
     }
 }

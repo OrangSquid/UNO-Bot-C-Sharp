@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UNOLib
+﻿namespace UNOLib
 {
-    internal interface IPlayer
+    public interface IPlayer : IEnumerable<ICard>
     {
         public int Id { get; }
-        public void AddCard(ICard card);
+        internal void AddCard(ICard card);
+        internal bool HasCard(string cardId);
+        internal void RemoveCard(string cardId);
+        internal ICard GetCard(string cardId);
     }
 }

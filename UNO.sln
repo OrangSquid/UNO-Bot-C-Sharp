@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UNOConsole", "UNO\UNOConsole.csproj", "{AB4E6FCC-B160-46BA-8DB7-24578EBEF6C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UNOLib", "UNOLib\UNOLib.csproj", "{09F4A5CB-F860-4DE0-B34F-5CF9318C28A5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB4E6FCC-B160-46BA-8DB7-24578EBEF6C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB4E6FCC-B160-46BA-8DB7-24578EBEF6C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB4E6FCC-B160-46BA-8DB7-24578EBEF6C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB4E6FCC-B160-46BA-8DB7-24578EBEF6C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09F4A5CB-F860-4DE0-B34F-5CF9318C28A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09F4A5CB-F860-4DE0-B34F-5CF9318C28A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09F4A5CB-F860-4DE0-B34F-5CF9318C28A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09F4A5CB-F860-4DE0-B34F-5CF9318C28A5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8DFE76AA-783D-46C1-A1A7-E9B206083D5E}
+	EndGlobalSection
+EndGlobal

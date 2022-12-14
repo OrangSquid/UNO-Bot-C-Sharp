@@ -6,12 +6,22 @@ namespace UNOLib
 {
     internal class Player : IPlayer
     {
-        public int Id { get; init; }
         private readonly SortedDictionary<string, Stack<ICard>> _deck;
+        private int _numCards;
+        public int Id { get; init; }
+
+        public int NumCards
+        {
+            get
+            {
+                return _numCards;
+            }
+        }
 
         public Player(int id)
         {
             Id = id;
+            _numCards = 0;
             _deck = new();
         }
 
@@ -28,6 +38,7 @@ namespace UNOLib
                 _deck.Add(card.ToString(), cardsSameValue);
             }
             cardsSameValue.Push(card);
+            _numCards++;
         }
 
         public void RemoveCard(string cardId)
@@ -37,6 +48,7 @@ namespace UNOLib
                 throw new PlayerDoesNotHaveCardException();
             }
             _ = cardsSameValue.Pop();
+            _numCards--;
             if (cardsSameValue.Count == 0)
             {
                 _ = _deck.Remove(cardId);

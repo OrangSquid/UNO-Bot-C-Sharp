@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UNOLib.Exceptions
 {
-    internal class CardCannotBePlayedException : Exception
+    public class CardCannotBePlayedException : Exception
     {
     }
 }

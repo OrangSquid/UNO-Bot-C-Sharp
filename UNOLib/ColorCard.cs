@@ -6,8 +6,8 @@
         public ColorCardSymbols Symbol { get; init; }
 
         public ColorCard(CardColors color, ColorCardSymbols symbol)
-        { 
-            Color = color; 
+        {
+            Color = color;
             Symbol = symbol;
         }
 

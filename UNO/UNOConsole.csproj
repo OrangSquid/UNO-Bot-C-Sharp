@@ -11,4 +11,8 @@
     <ProjectReference Include="..\UNOLib\UNOLib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Tests\" />
+  </ItemGroup>
+
 </Project>

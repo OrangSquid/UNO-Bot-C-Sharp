@@ -1,4 +1,5 @@
-﻿using UNOLib.Exceptions;
+﻿using System.Collections;
+using UNOLib.Exceptions;
 
 namespace UNOLib
 {
@@ -36,10 +37,13 @@ namespace UNOLib
         }
     }
 
-    public class GameSystem
+    public class GameSystem : IEnumerable<IPlayer>
     {
         private const int CARDS_PER_PLAYER = 7;
         private const int NUMBER_CARDS = 108;
+        private const int NUMBER_OF_ZEROS = 1;
+        private const int NUMBER_OF_EACH_COLOR_CARD = 2;
+        private const int NUMBER_OF_EACH_WILD_CARD = 4;
         private static readonly Random rng = new();
         private static readonly Dictionary<string, ICard> _allCardsDict;
         private static readonly List<ICard> _allCards;
@@ -49,6 +53,14 @@ namespace UNOLib
         private ICard _onTable;
         private IPlayer _currentPlayer;
 
+        public string OnTable
+        {
+            get
+            {
+                return _onTable.ToString();
+            }
+        }
+
         static GameSystem()
         {
             _allCardsDict = new(NUMBER_CARDS);
@@ -57,10 +69,9 @@ namespace UNOLib
             {
                 foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
                 {
-                    // TODO find better implementation for card counting
                     ICard card = new ColorCard(color, symbol);
                     _allCardsDict.Add(card.ToString(), card);
-                    int i = symbol == ColorCardSymbols.Zero ? 1 : 2;
+                    int i = symbol == ColorCardSymbols.Zero ? NUMBER_OF_ZEROS : NUMBER_OF_EACH_COLOR_CARD;
                     for (; i > 0; i--)
                     {
                         _allCards.Add(card);
@@ -70,10 +81,9 @@ namespace UNOLib
             foreach (WildCardSymbols symbol in Enum.GetValuesAsUnderlyingType<WildCardSymbols>())
             {
                 // CardColors.RED is simply used as a placeholder
-                // TODO find better implementation for card counting
                 ICard card = new WildCard(CardColors.Red, symbol);
                 _allCardsDict.Add(card.ToString(), card);
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < NUMBER_OF_EACH_WILD_CARD; i++)
                 {
                     _allCards.Add(card);
                 }
@@ -100,11 +110,7 @@ namespace UNOLib
 
         public void CardPlay(string cardId)
         {
-            if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed))
-            {
-                throw new CardCannotBePlayedException();
-            }
-            else if (!_onTable.CanBePlayed(cardToBePlayed))
+            if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_onTable.CanBePlayed(cardToBePlayed))
             {
                 throw new CardCannotBePlayedException();
             }
@@ -112,13 +118,34 @@ namespace UNOLib
             {
                 _onTable = cardToBePlayed;
                 _currentPlayer.RemoveCard(cardId);
-                _currentPlayer = _playersByOrder[(_currentPlayer.Id + 1) % _playersByOrder.Count];
+                SetNextPlayer();
             }
         }
 
         public IPlayer GetPlayer(int id)
         {
             return _playersByOrder[id];
+        }
+
+        public void DrawCard()
+        {
+            _currentPlayer.AddCard(_fullDeck.Pop());
+            SetNextPlayer();
+        }
+
+        private void SetNextPlayer()
+        {
+            _currentPlayer = _playersByOrder[(_currentPlayer.Id + 1) % _playersByOrder.Count];
+        }
+
+        public IEnumerator<IPlayer> GetEnumerator()
+        {
+            return ((IEnumerable<IPlayer>)_playersByOrder).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)_playersByOrder).GetEnumerator();
         }
     }
 }

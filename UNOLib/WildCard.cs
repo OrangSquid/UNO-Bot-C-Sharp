@@ -5,6 +5,7 @@ namespace UNOLib
     {
         public CardColors Color { get; protected set; }
         public WildCardSymbols Symbol { get; init; }
+        private const string ACTUAL_COLOR = "Wild";
 
         public WildCard(CardColors color, WildCardSymbols symbol)
         {
@@ -19,7 +20,7 @@ namespace UNOLib
 
         public override string ToString()
         {
-            return string.Concat(Color.ToString(), Symbol.ToString());
+            return string.Concat(ACTUAL_COLOR, Symbol.ToString());
         }
     }
 }

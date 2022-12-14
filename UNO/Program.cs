@@ -1,4 +1,5 @@
 ﻿using UNOLib;
+using UNOLib.Exceptions;
 
 namespace UNOConsole
 {
@@ -8,7 +9,7 @@ namespace UNOConsole
         public static void Main(string[] args)
         {
             string? Command = "";
-            while(Command is not null && !Command.Equals("exit"))
+            while (Command is not null && !Command.Equals("exit"))
             {
                 Command = Console.ReadLine();
                 CommandInterpreter(Command);
@@ -17,7 +18,7 @@ namespace UNOConsole
 
         private static void CommandInterpreter(string? Command)
         {
-            switch(Command)
+            switch (Command)
             {
                 case "new":
                     NewGame();
@@ -27,6 +28,12 @@ namespace UNOConsole
                     break;
                 case "check":
                     CheckCards();
+                    break;
+                case "draw":
+                    DrawCard();
+                    break;
+                case "state":
+                    CheckState();
                     break;
             }
         }
@@ -70,17 +77,65 @@ namespace UNOConsole
 
         private static void PlayCard()
         {
-
+            if (uno is null)
+            {
+                return;
+            }
+            string? cardId = Console.ReadLine();
+            try
+            {
+                if (cardId != null)
+                    uno.CardPlay(cardId);
+            }
+            catch (CardCannotBePlayedException)
+            {
+                Console.WriteLine("That Card cannot be played");
+            }
         }
 
         private static void CheckCards()
         {
-            if(uno is null)
+            if (uno is null)
+            {
                 return;
+            }
             int nPlayer = Convert.ToInt32(Console.ReadLine());
-            IPlayer player = uno.GetPlayer(nPlayer);
-            foreach(ICard card in player)
-                Console.WriteLine(card.ToString());
+            try
+            {
+                IPlayer player = uno.GetPlayer(nPlayer);
+                foreach (ICard card in player)
+                {
+                    Console.WriteLine(card.ToString());
+                }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Console.WriteLine("Player does not exist");
+            }
+        }
+
+        private static void DrawCard()
+        {
+            if (uno is null)
+            {
+                return;
+            }
+
+            uno.DrawCard();
+        }
+
+        private static void CheckState()
+        {
+            if (uno is null)
+            {
+                return;
+            }
+
+            foreach (IPlayer player in uno)
+            {
+                Console.WriteLine("P{0}: {1} cards", player.Id, player.NumCards);
+            }
+            Console.WriteLine(uno.OnTable);
         }
     }
 }

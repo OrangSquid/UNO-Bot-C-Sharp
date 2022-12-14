@@ -38,7 +38,6 @@ namespace UNOLib
                 return MoveNext();
             }
             return false;
-
         }
 
         public void Reset()

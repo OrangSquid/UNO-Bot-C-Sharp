@@ -35,7 +35,7 @@ namespace UNOLib
     public interface ICard
     {
         internal CardColors Color { get; }
-        public bool CanBePlayed(ICard card);
+        internal bool CanBePlayed(ICard card);
         public string ToString();
     }
 }

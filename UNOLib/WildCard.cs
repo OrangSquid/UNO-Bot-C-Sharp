@@ -3,8 +3,9 @@ namespace UNOLib
 {
     internal class WildCard : ICard
     {
-        public CardColors Color { get; protected set; }
-        public WildCardSymbols Symbol { get; init; }
+        public CardColors Color { get; set; }
+
+        internal WildCardSymbols Symbol { get; init; }
         private const string ACTUAL_COLOR = "Wild";
 
         public WildCard(CardColors color, WildCardSymbols symbol)

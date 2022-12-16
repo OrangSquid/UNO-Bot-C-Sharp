@@ -1,42 +1,9 @@
 ﻿using System.Collections;
+using System.Drawing;
 using UNOLib.Exceptions;
 
 namespace UNOLib
 {
-    public readonly struct Settings
-    {
-        public bool PlaySameSymbol { get; init; }
-        public bool StackPlusTwo { get; init; }
-        public bool StackWildPlusFour { get; init; }
-        public bool MustPlay { get; init; }
-        public bool JumpIn { get; init; }
-        public bool DrawUntilPlayableCard { get; init; }
-        public bool NumZeroPlayed { get; init; }
-        public bool NumSevenPlayed { get; init; }
-        public int NoUNOPenalty { get; init; }
-
-        public Settings(bool playSameSymbol,
-                        bool stackPlusTwo,
-                        bool stackWildPlusFour,
-                        bool mustPlay,
-                        bool jumpIn,
-                        bool drawUntilPlayableCard,
-                        bool numZeroPlayed,
-                        bool numSevenPlayed,
-                        int noUNOPenalty)
-        {
-            PlaySameSymbol = playSameSymbol;
-            StackPlusTwo = stackPlusTwo;
-            StackWildPlusFour = stackWildPlusFour;
-            MustPlay = mustPlay;
-            JumpIn = jumpIn;
-            DrawUntilPlayableCard = drawUntilPlayableCard;
-            NumZeroPlayed = numZeroPlayed;
-            NumSevenPlayed = numSevenPlayed;
-            NoUNOPenalty = noUNOPenalty;
-        }
-    }
-
     public class GameSystem : IEnumerable<IPlayer>
     {
         private const int CARDS_PER_PLAYER = 7;
@@ -50,16 +17,11 @@ namespace UNOLib
         private readonly Stack<ICard> _fullDeck;
         private readonly Settings _settings;
         private readonly List<IPlayer> _playersByOrder;
+        private GameState _state;
         private ICard _onTable;
         private IPlayer _currentPlayer;
 
-        public string OnTable
-        {
-            get
-            {
-                return _onTable.ToString();
-            }
-        }
+        public string OnTable => _onTable.ToString();
 
         static GameSystem()
         {
@@ -103,9 +65,10 @@ namespace UNOLib
                     player.AddCard(_fullDeck.Pop());
                 }
             }
-            _currentPlayer = _playersByOrder.First<IPlayer>();
+            _currentPlayer = _playersByOrder.First();
             _onTable = _fullDeck.Pop();
             _settings = settings;
+            _state = new GameState(_onTable, _currentPlayer);
         }
 
         public void CardPlay(string cardId)
@@ -116,9 +79,48 @@ namespace UNOLib
             }
             else
             {
-                _onTable = cardToBePlayed;
                 _currentPlayer.RemoveCard(cardId);
+                _onTable = cardToBePlayed;
+                CardAction(cardToBePlayed);
                 SetNextPlayer();
+            }
+        }
+
+        private void CardAction(ICard card)
+        {
+            if (card is WildCard wildCard)
+            {
+                switch (wildCard.Symbol)
+                {
+                    case WildCardSymbols.Simple: //Changes the color on the table
+                        break;
+                    case WildCardSymbols.PlusFour: //Changes the color on the table and
+                                                   //the next player has to draw 4 cards
+                        break;
+                }
+            }
+            else if (card is ColorCard colorCard)
+            {
+                switch (colorCard.Symbol)
+                {
+                    // TODO
+                    /* case ColorCardSymbols.Zero: //To be decided
+                        break;
+                    case ColorCardSymbols.Seven: //Ditto
+                        break; */
+                    case ColorCardSymbols.Skip: //Skips the next player
+                        SetNextPlayer();
+                        break;
+                    case ColorCardSymbols.Reverse: //Reverses the order of players in the next round
+                        _state.ReverseOrder();
+                        if (_playersByOrder.Count == 2)
+                            SetNextPlayer();
+                        break;
+                    case ColorCardSymbols.PlusTwo: //Next player has to draw 2 cards
+                        // TODO make it stack
+                        DrawAndSkip(2);
+                        break;
+                }
             }
         }
 
@@ -133,9 +135,25 @@ namespace UNOLib
             SetNextPlayer();
         }
 
+        public void DrawAndSkip(int cardsToDraw)
+        {
+            SetNextPlayer();
+            for (int i = 0; i < cardsToDraw; i++)
+                _currentPlayer.AddCard(_fullDeck.Pop());
+        }
+
         private void SetNextPlayer()
         {
-            _currentPlayer = _playersByOrder[(_currentPlayer.Id + 1) % _playersByOrder.Count];
+            if(_state.ClockwiseOrder)
+                _currentPlayer = _playersByOrder[(_currentPlayer.Id + 1) % _playersByOrder.Count];
+            else
+                _currentPlayer = _playersByOrder[(_currentPlayer.Id + _playersByOrder.Count - 1) % _playersByOrder.Count];
+        }
+
+        // TOGO GET THIS TO GAME STATE
+        public IPlayer getCurrentPlayer()
+        {
+            return _currentPlayer;
         }
 
         public IEnumerator<IPlayer> GetEnumerator()

@@ -1,6 +1,6 @@
 ﻿namespace UNOLib.Exceptions
 {
-    internal class PlayerDoesNotHaveCardException : Exception
+    public class PlayerDoesNotHaveCardException : Exception
     {
     }
 }

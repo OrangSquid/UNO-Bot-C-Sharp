@@ -7,59 +7,70 @@ namespace UNOLib
     internal class Player : IPlayer
     {
         private readonly SortedDictionary<string, Stack<ICard>> _deck;
-        private int _numCards;
-        public int Id { get; init; }
+        private int _numPlusTwoCards;
+        private int _numWildPlusFourCards;
 
-        public int NumCards
-        {
-            get
-            {
-                return _numCards;
-            }
-        }
+        public int Id { get; }
+
+        public bool HasPlusTwoCards => _numPlusTwoCards > 0;
+
+        public bool HasWildPlusFourCards => _numWildPlusFourCards > 0;
+
+        public int NumCards { get; private set; }
 
         public Player(int id)
         {
             Id = id;
-            _numCards = 0;
+            NumCards = 0;
+            _numPlusTwoCards = 0;
+            _numWildPlusFourCards = 0;
             _deck = new();
-        }
-
-        public bool HasCard(string cardId)
-        {
-            return _deck.ContainsKey(cardId);
         }
 
         public void AddCard(ICard card)
         {
+            // Check if player has card and store it in cardsSameValue
             if (!_deck.TryGetValue(card.ToString(), out Stack<ICard>? cardsSameValue))
             {
                 cardsSameValue = new Stack<ICard>();
                 _deck.Add(card.ToString(), cardsSameValue);
             }
             cardsSameValue.Push(card);
-            _numCards++;
+            // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
+            if (card is ColorCard cCard && cCard.Symbol == ColorCardSymbols.PlusTwo)
+            {
+                _numPlusTwoCards++;
+            }
+            else if (card is WildCard wCard && wCard.Symbol == WildCardSymbols.PlusFour)
+            {
+                _numWildPlusFourCards++;
+            }
+            NumCards++;
         }
 
         public void RemoveCard(string cardId)
         {
+            // Check if player has card and store it in cardsSameValue
             if (!_deck.TryGetValue(cardId, out Stack<ICard>? cardsSameValue))
             {
                 throw new PlayerDoesNotHaveCardException();
             }
-            _ = cardsSameValue.Pop();
-            _numCards--;
+            ICard card = cardsSameValue.Pop();
+            // Clear stack of the same cards
             if (cardsSameValue.Count == 0)
             {
-                _ = _deck.Remove(cardId);
+                _deck.Remove(cardId);
             }
-        }
-
-        public ICard GetCard(string cardId)
-        {
-            return !_deck.TryGetValue(cardId, out Stack<ICard>? cardsSameValue)
-                ? throw new PlayerDoesNotHaveCardException()
-                : cardsSameValue.Peek();
+            // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
+            if (card is ColorCard cCard && cCard.Symbol == ColorCardSymbols.PlusTwo)
+            {
+                _numPlusTwoCards--;
+            }
+            else if (card is WildCard wCard && wCard.Symbol == WildCardSymbols.PlusFour)
+            {
+                _numWildPlusFourCards--;
+            }
+            NumCards--;
         }
 
         public IEnumerator<ICard> GetEnumerator()

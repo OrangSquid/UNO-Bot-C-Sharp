@@ -2,15 +2,15 @@
 {
     public readonly struct Settings
     {
-        public bool PlaySameSymbol { get; init; }
-        public bool StackPlusTwo { get; init; }
-        public bool StackWildPlusFour { get; init; }
-        public bool MustPlay { get; init; }
-        public bool JumpIn { get; init; }
-        public bool DrawUntilPlayableCard { get; init; }
-        public bool NumZeroPlayed { get; init; }
-        public bool NumSevenPlayed { get; init; }
-        public int NoUNOPenalty { get; init; }
+        public bool PlaySameSymbol { get; }
+        public bool StackPlusTwo { get; }
+        public bool StackWildPlusFour { get; }
+        public bool MustPlay { get; }
+        public bool JumpIn { get; }
+        public bool DrawUntilPlayableCard { get; }
+        public bool NumZeroPlayed { get; }
+        public bool NumSevenPlayed { get; }
+        public int NoUNOPenalty { get; }
 
         public Settings(bool playSameSymbol,
                         bool stackPlusTwo,

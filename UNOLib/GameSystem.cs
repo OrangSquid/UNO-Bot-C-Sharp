@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Drawing;
 using UNOLib.Exceptions;
 
 namespace UNOLib
@@ -14,14 +13,14 @@ namespace UNOLib
         private static readonly Random rng = new();
         private static readonly Dictionary<string, ICard> _allCardsDict;
         private static readonly List<ICard> _allCards;
-        private readonly Stack<ICard> _fullDeck;
         private readonly Settings _settings;
         private readonly List<IPlayer> _playersByOrder;
-        private GameState _state;
-        private ICard _onTable;
-        private IPlayer _currentPlayer;
+        private readonly List<ICard> _onTableCards;
+        private Stack<ICard> _fullDeck;
+        
 
-        public string OnTable => _onTable.ToString();
+        private GameState _state;
+        public GameState State { get => _state; }
 
         static GameSystem()
         {
@@ -55,6 +54,7 @@ namespace UNOLib
         public GameSystem(int nPlayers, Settings settings)
         {
             _fullDeck = new(_allCards.OrderBy(a => rng.Next()).ToList());
+            _onTableCards = new(NUMBER_CARDS);
             _playersByOrder = new(nPlayers);
             for (int i = 0; i < nPlayers; i++)
             {
@@ -65,22 +65,22 @@ namespace UNOLib
                     player.AddCard(_fullDeck.Pop());
                 }
             }
-            _currentPlayer = _playersByOrder.First();
-            _onTable = _fullDeck.Pop();
             _settings = settings;
-            _state = new GameState(_onTable, _currentPlayer);
+            _state = new GameState(_fullDeck.Pop(), _playersByOrder.First());
         }
 
         public void CardPlay(string cardId)
         {
-            if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_onTable.CanBePlayed(cardToBePlayed))
+            if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_state.OnTable.CanBePlayed(cardToBePlayed))
             {
                 throw new CardCannotBePlayedException();
             }
             else
             {
-                _currentPlayer.RemoveCard(cardId);
-                _onTable = cardToBePlayed;
+                _state.CurrentPlayer.RemoveCard(cardId);
+                _onTableCards.Add(_state.OnTable);
+                _state.OnTable = cardToBePlayed;
+                _state.Refresh();
                 CardAction(cardToBePlayed);
                 SetNextPlayer();
             }
@@ -131,7 +131,7 @@ namespace UNOLib
 
         public void DrawCard()
         {
-            _currentPlayer.AddCard(_fullDeck.Pop());
+            _state.CurrentPlayer.AddCard(DrawAndFill());
             SetNextPlayer();
         }
 
@@ -139,21 +139,26 @@ namespace UNOLib
         {
             SetNextPlayer();
             for (int i = 0; i < cardsToDraw; i++)
-                _currentPlayer.AddCard(_fullDeck.Pop());
+                _state.CurrentPlayer.AddCard(_fullDeck.Pop());
+        }
+
+        private ICard DrawAndFill()
+        {
+            ICard card = _fullDeck.Pop();
+            if (_fullDeck.Count == 0)
+            {
+                _fullDeck = new(_onTableCards.OrderBy(a => rng.Next()).ToList());
+                _onTableCards.Clear();
+            }
+            return card;
         }
 
         private void SetNextPlayer()
         {
             if(_state.ClockwiseOrder)
-                _currentPlayer = _playersByOrder[(_currentPlayer.Id + 1) % _playersByOrder.Count];
+                _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + 1) % _playersByOrder.Count];
             else
-                _currentPlayer = _playersByOrder[(_currentPlayer.Id + _playersByOrder.Count - 1) % _playersByOrder.Count];
-        }
-
-        // TOGO GET THIS TO GAME STATE
-        public IPlayer getCurrentPlayer()
-        {
-            return _currentPlayer;
+                _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + _playersByOrder.Count - 1) % _playersByOrder.Count];
         }
 
         public IEnumerator<IPlayer> GetEnumerator()

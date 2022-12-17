@@ -1,7 +1,7 @@
 ﻿
 namespace UNOLib
 {
-    internal enum CardColors
+   public enum CardColors
     {
         Red,
         Green,

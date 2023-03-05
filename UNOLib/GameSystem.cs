@@ -10,16 +10,14 @@ namespace UNOLib
         private const int NUMBER_OF_ZEROS = 1;
         private const int NUMBER_OF_EACH_COLOR_CARD = 2;
         private const int NUMBER_OF_EACH_WILD_CARD = 4;
-        private static readonly Random rng = new();
         private static readonly Dictionary<string, ICard> _allCardsDict;
         private static readonly List<ICard> _allCards;
+
         private readonly Settings _settings;
         private readonly List<IPlayer> _playersByOrder;
-        private readonly List<ICard> _onTableCards;
-        private Stack<ICard> _fullDeck;
-        
-
+        private DrawStyle _drawStyle;
         private GameState _state;
+
         public GameState State { get => _state; }
 
         static GameSystem()
@@ -53,8 +51,7 @@ namespace UNOLib
 
         public GameSystem(int nPlayers, Settings settings)
         {
-            _fullDeck = new(_allCards.OrderBy(a => rng.Next()).ToList());
-            _onTableCards = new(NUMBER_CARDS);
+            _drawStyle = new(_allCards, NUMBER_CARDS);
             _playersByOrder = new(nPlayers);
             for (int i = 0; i < nPlayers; i++)
             {
@@ -62,15 +59,16 @@ namespace UNOLib
                 _playersByOrder.Add(player);
                 for (int j = 0; j < CARDS_PER_PLAYER; j++)
                 {
-                    player.AddCard(_fullDeck.Pop());
+                    player.AddCard(_drawStyle.Draw());
                 }
             }
             _settings = settings;
-            _state = new GameState(_fullDeck.Pop(), _playersByOrder.First());
+            _state = new GameState(_drawStyle.Draw(), _playersByOrder.First(), _playersByOrder.Count);
         }
 
         public void CardPlay(string cardId)
         {
+            // Check if card is present in the dictionary for all cards and if card can be played on top of current one
             if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_state.OnTable.CanBePlayed(cardToBePlayed))
             {
                 throw new CardCannotBePlayedException();
@@ -78,9 +76,10 @@ namespace UNOLib
             else
             {
                 _state.CurrentPlayer.RemoveCard(cardId);
-                _onTableCards.Add(_state.OnTable);
-                _state.OnTable = cardToBePlayed;
                 _state.Refresh();
+                _drawStyle.Push(_state.OnTable);
+                _state.OnTable = cardToBePlayed;
+                _state.CardsPlayed.AddLast(cardToBePlayed);
                 CardAction(cardToBePlayed);
                 SetNextPlayer();
             }
@@ -103,13 +102,8 @@ namespace UNOLib
             {
                 switch (colorCard.Symbol)
                 {
-                    // TODO
-                    /* case ColorCardSymbols.Zero: //To be decided
-                        break;
-                    case ColorCardSymbols.Seven: //Ditto
-                        break; */
                     case ColorCardSymbols.Skip: //Skips the next player
-                        SetNextPlayer();
+                        SkipPlayer();
                         break;
                     case ColorCardSymbols.Reverse: //Reverses the order of players in the next round
                         _state.ReverseOrder();
@@ -131,7 +125,7 @@ namespace UNOLib
 
         public void DrawCard()
         {
-            _state.CurrentPlayer.AddCard(DrawAndFill());
+            _state.CurrentPlayer.AddCard(_drawStyle.Draw());
             SetNextPlayer();
         }
 
@@ -139,19 +133,9 @@ namespace UNOLib
         {
             SetNextPlayer();
             for (int i = 0; i < cardsToDraw; i++)
-                _state.CurrentPlayer.AddCard(_fullDeck.Pop());
+                _state.CurrentPlayer.AddCard(_drawStyle.Draw());
         }
 
-        private ICard DrawAndFill()
-        {
-            ICard card = _fullDeck.Pop();
-            if (_fullDeck.Count == 0)
-            {
-                _fullDeck = new(_onTableCards.OrderBy(a => rng.Next()).ToList());
-                _onTableCards.Clear();
-            }
-            return card;
-        }
 
         private void SetNextPlayer()
         {
@@ -159,6 +143,12 @@ namespace UNOLib
                 _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + 1) % _playersByOrder.Count];
             else
                 _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + _playersByOrder.Count - 1) % _playersByOrder.Count];
+        }
+
+        private void SkipPlayer()
+        {
+            SetNextPlayer();
+            _state.PlayersSkiped.Add(_state.CurrentPlayer);
         }
 
         public IEnumerator<IPlayer> GetEnumerator()

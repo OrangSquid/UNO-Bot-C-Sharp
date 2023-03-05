@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace UNOLib
+{
+    internal class DrawStyle
+    {
+        private static readonly Random rng = new();
+        private Stack<ICard> _fullDeck;
+        private List<ICard> _playedCards;
+
+        public DrawStyle(List<ICard> fullDeck, int number_total_cards)
+        {
+            _fullDeck = new(fullDeck.OrderBy(a => rng.Next()).ToList());
+            _playedCards = new List<ICard>(number_total_cards);
+        }
+
+        public void Push(ICard card)
+        {
+            _playedCards.Add(card);
+        }
+
+        public ICard Draw()
+        {
+            ICard card = _fullDeck.Pop();
+            if (_fullDeck.Count == 0)
+            {
+                _fullDeck = new(_playedCards.OrderBy(a => rng.Next()).ToList());
+                _playedCards.Clear();
+            }
+            return card;
+        }
+    }
+}

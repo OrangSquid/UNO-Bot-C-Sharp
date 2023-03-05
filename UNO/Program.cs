@@ -95,6 +95,9 @@ namespace UNOConsole
             {
                 Console.WriteLine("Player does not have that card");
             }
+
+            Console.WriteLine("----------");
+
         }
 
         private static void CheckCards()
@@ -136,14 +139,14 @@ namespace UNOConsole
             }
             foreach (IPlayer player in uno)
             {
-                if(player == uno.getCurrentPlayer())
+                if(player == uno.State.CurrentPlayer)
                     Console.Write("-> ");
                 else
                     Console.Write("   ");
 
                 Console.WriteLine("P{0}: {1} cards", player.Id, player.NumCards);
             }
-            Console.WriteLine(uno.OnTable);
+            Console.WriteLine(uno.State.OnTable);
         }
     }
 }

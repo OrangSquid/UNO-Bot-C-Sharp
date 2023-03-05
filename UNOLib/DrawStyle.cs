@@ -6,32 +6,29 @@ using System.Threading.Tasks;
 
 namespace UNOLib
 {
-    internal class DrawStyle
+    /// <summary>
+    /// Interface for the various draw styles. Handles the card stack and drawing methods
+    /// </summary>
+    internal interface DrawStyle
     {
-        private static readonly Random rng = new();
-        private Stack<ICard> _fullDeck;
-        private List<ICard> _playedCards;
+        /// <summary>
+        /// Adds a card to the played card stack.
+        /// </summary>
+        /// <param name="card"></param>
+        void Push(ICard card);
 
-        public DrawStyle(List<ICard> fullDeck, int number_total_cards)
-        {
-            _fullDeck = new(fullDeck.OrderBy(a => rng.Next()).ToList());
-            _playedCards = new List<ICard>(number_total_cards);
-        }
+        /// <summary>
+        /// Draws a single card from the card stack. If there aren't any left, it shuffles the played card stack.
+        /// Only use for forced draws like start of the game and 2+ situations.
+        /// </summary>
+        /// <returns>Drawn card</returns>
+        ICard Draw();
 
-        public void Push(ICard card)
-        {
-            _playedCards.Add(card);
-        }
-
-        public ICard Draw()
-        {
-            ICard card = _fullDeck.Pop();
-            if (_fullDeck.Count == 0)
-            {
-                _fullDeck = new(_playedCards.OrderBy(a => rng.Next()).ToList());
-                _playedCards.Clear();
-            }
-            return card;
-        }
+        /// <summary>
+        /// Draws the card in the implemented style.
+        /// </summary>
+        /// <param name="state">the state of the game to take into account</param>
+        /// <returns>true if the player can play any of the drawn cards, false otherwise</returns>
+        bool GameDraw(GameState state);
     }
 }

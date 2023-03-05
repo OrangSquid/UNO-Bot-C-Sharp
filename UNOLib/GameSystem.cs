@@ -51,7 +51,15 @@ namespace UNOLib
 
         public GameSystem(int nPlayers, Settings settings)
         {
-            _drawStyle = new(_allCards, NUMBER_CARDS);
+            // Create DrawStyle
+            if(settings.DrawUntilPlayableCard)
+            {
+                _drawStyle = new DrawUntilFound(_allCards, NUMBER_CARDS);
+            } 
+            else
+            {
+                _drawStyle = new DrawSingle(_allCards, NUMBER_CARDS);
+            }
             _playersByOrder = new(nPlayers);
             for (int i = 0; i < nPlayers; i++)
             {
@@ -125,8 +133,9 @@ namespace UNOLib
 
         public void DrawCard()
         {
-            _state.CurrentPlayer.AddCard(_drawStyle.Draw());
-            SetNextPlayer();
+            _state.Refresh();
+            if(!_drawStyle.GameDraw(_state))
+                SetNextPlayer();
         }
 
         public void DrawAndSkip(int cardsToDraw)

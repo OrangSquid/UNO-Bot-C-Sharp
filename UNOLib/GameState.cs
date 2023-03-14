@@ -10,11 +10,14 @@
         public bool JustReversedOrder { get; internal set; }
         public List<IPlayer> PlayersSkiped { get; internal set; }
         public IPlayer? WhoDrewCards { get; internal set; }
+        // Note: CardsDrawn is set to a number when a wild plus 4 is played however nobody is set to have drawn those cards
+        // since the system will be waiting for the color to change the wild
         public int CardsDrawn { get; internal set; }
         public CardColors? ColorChanged { get => colorChanged; internal set => colorChanged = value; }
         public bool NewTurn { get; internal set; }
         internal bool ClockwiseOrder { get; set; }
         public bool WaitingOnColorChange { get; internal set; }
+        public bool GameFinished { get; internal set; }
         
 
         private CardColors? colorChanged;
@@ -29,6 +32,7 @@
             CardsPlayed = new();
             Refresh();
             NewTurn = true;
+            GameFinished = false;
         }
 
         /// <summary>
@@ -46,6 +50,9 @@
             NewTurn = false;
         }
 
+        /// <summary>
+        /// Reverses the play order. Clockwise or Counter Clockwise
+        /// </summary>
         internal void ReverseOrder()
         {
             ClockwiseOrder = !ClockwiseOrder;

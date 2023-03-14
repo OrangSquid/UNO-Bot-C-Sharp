@@ -1,5 +1,8 @@
 ﻿namespace UNOLib
-{
+{   
+    /// <summary>
+    /// Color Cards
+    /// </summary>
     internal class ColorCard : ICard
     {
         public CardColors Color { get; }

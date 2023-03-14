@@ -1,6 +1,9 @@
 ﻿
 namespace UNOLib
 {
+    /// <summary>
+    /// Wild Cards
+    /// </summary>
     internal class WildCard : ICard
     {
         public CardColors Color { get; set; }

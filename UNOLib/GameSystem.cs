@@ -49,6 +49,11 @@ namespace UNOLib
             }
         }
 
+        /// <summary>
+        /// Game System constructor. Received the number of players and the chosen settings.
+        /// </summary>
+        /// <param name="nPlayers">Number of Players in the game</param>
+        /// <param name="settings">Settings object containing the chosen settings</param>
         public GameSystem(int nPlayers, Settings settings)
         {
             // Create DrawStyle
@@ -74,10 +79,21 @@ namespace UNOLib
             _state = new GameState(_drawStyle.Draw(), _playersByOrder.First(), _playersByOrder.Count);
         }
 
+        /// <summary>
+        /// Plays the card and checks if the players has finished their deck. 
+        /// CardAction is called afterwards to do the action specified for that card.
+        /// </summary>
+        /// <param name="cardId">Id of the card to be played</param>
+        /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
+        /// <exception cref="CardCannotBePlayedException">Card does not meet the requirements to be played or does not exist at all.</exception>
         public void CardPlay(string cardId)
         {
+            if (_state.GameFinished)
+            {
+                throw new GameIsFinishedException();
+            }
             // Check if card is present in the dictionary for all cards and if card can be played on top of current one
-            if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_state.OnTable.CanBePlayed(cardToBePlayed))
+            else if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_state.OnTable.CanBePlayed(cardToBePlayed))
             {
                 throw new CardCannotBePlayedException();
             }
@@ -89,14 +105,82 @@ namespace UNOLib
                 _drawStyle.Push(_state.OnTable);
                 _state.OnTable = cardToBePlayed;
                 _state.CardsPlayed.AddLast(cardToBePlayed);
-                CardAction(cardToBePlayed);
+                if (_state.CurrentPlayer.NumCards == 0)
+                {
+                    _state.GameFinished = true;
+                }
+                else
+                {
+                    CardAction(cardToBePlayed);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the player with the specified Id
+        /// </summary>
+        /// <param name="id">Id of the Player</param>
+        /// <returns></returns>
+        public IPlayer GetPlayer(int id)
+        {
+            return _playersByOrder[id];
+        }
+
+        /// <summary>
+        /// Should be caled when the current player wants or needs to draw cards
+        /// </summary>
+        /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
+        public void DrawCard()
+        {
+            if (_state.GameFinished)
+            {
+                throw new GameIsFinishedException();
+            }
+            _state.Refresh();
+            _state.PreviousPlayer = _state.CurrentPlayer;
+            if (!_drawStyle.GameDraw(ref _state))
+                SetNextPlayer();
+        }
+
+        /// <summary>
+        /// Changes the color when a Wild Card is played to the specified by the current Player.
+        /// If a Four Plus Wild Card is played it also makes the next player draw 4 cards and skips it.
+        /// </summary>
+        /// <param name="color">color that was chosen</param>
+        /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
+        /// <exception cref="CannotChangeColorException">Cannot change the color because there was no Wild Card played.</exception>
+        /// <exception cref="ArgumentException">color is either null or invalid.</exception>
+        public void ChangeOnTableColor(string? color)
+        {
+            if (_state.GameFinished)
+            {
+                throw new GameIsFinishedException();
+            }
+            else if (!_state.WaitingOnColorChange)
+            {
+                throw new CannotChangeColorException();
+            }
+            else if (color is null)
+            {
+                throw new ArgumentException();
+            }
+            else if (_state.OnTable is WildCard wildCard)
+            {
+                wildCard.Color = Enum.Parse<CardColors>(color);
+                _state.ColorChanged = wildCard.Color;
+                _state.WaitingOnColorChange = false;
+                if (_state.CardsDrawn != 0)
+                {
+                    DrawAndSkip(_state.CardsDrawn);
+                }
+                SetNextPlayer();
             }
         }
 
         /// <summary>
         /// Selects the appropriate method for the card played. ColorCards sets the next turn, WildCards wait for the color.
         /// </summary>
-        /// <param name="card"></param>
+        /// <param name="card">Card that was played</param>
         private void CardAction(ICard card)
         {
             if (card is WildCard wildCard)
@@ -133,22 +217,6 @@ namespace UNOLib
             }
         }
 
-        public IPlayer GetPlayer(int id)
-        {
-            return _playersByOrder[id];
-        }
-
-        /// <summary>
-        /// Should be caled when the current player wants or needs to draw cards
-        /// </summary>
-        public void DrawCard()
-        {
-            _state.Refresh();
-            _state.PreviousPlayer = _state.CurrentPlayer;
-            if (!_drawStyle.GameDraw(ref _state))
-                SetNextPlayer();
-        }
-
         /// <summary>
         /// Sets new current player. Does not make it ready for a new turn. Should only be used for
         /// as an auxilary method for skipping and forcibly drawing cards.
@@ -165,7 +233,7 @@ namespace UNOLib
         /// Should be called when the next player is forced to draw cards
         /// </summary>
         /// <param name="cardsToDraw">The number of cards that must be drawn</param>
-        public void DrawAndSkip(int cardsToDraw)
+        private void DrawAndSkip(int cardsToDraw)
         {
             SkipPlayer();
             for (int i = 0; i < cardsToDraw; i++)
@@ -188,29 +256,6 @@ namespace UNOLib
         {
             SelectNextPlayer();
             _state.PlayersSkiped.Add(_state.CurrentPlayer);
-        }
-
-        public void ChangeOnTableColor(string? color)
-        {
-            if (!_state.WaitingOnColorChange)
-            {
-                throw new CannotChangeColorException();
-            }
-            else if (color is null)
-            {
-                throw new ArgumentException();
-            }
-            else if (_state.OnTable is WildCard wildCard)
-            {
-                wildCard.Color = Enum.Parse<CardColors>(color);
-                _state.ColorChanged = wildCard.Color;
-                _state.WaitingOnColorChange = false;
-                if (_state.CardsDrawn != 0)
-                {
-                    DrawAndSkip(_state.CardsDrawn);
-                }
-                SetNextPlayer();
-            }
         }
 
         public IEnumerator<IPlayer> GetEnumerator()

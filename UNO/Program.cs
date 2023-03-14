@@ -35,6 +35,9 @@ namespace UNOConsole
                 case "state":
                     CheckState();
                     break;
+                case "changeColor":
+                    ChangeColor();
+                    break;
             }
         }
 
@@ -104,10 +107,17 @@ namespace UNOConsole
             if (uno is null)
             {
                 return;
-        }
+            }
             string? color = Console.ReadLine();
-            uno.ChangeOnTableColor(color);
-            Console.WriteLine("Color changed to: {0}", color);
+            try
+            {
+                uno.ChangeOnTableColor(color);
+                Console.WriteLine("Color changed to: {0}", color);
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("Invalid color");
+            }
         }
 
         private static void CheckCards()

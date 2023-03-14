@@ -55,7 +55,7 @@ namespace UNOLib
             if (settings.DrawUntilPlayableCard)
             {
                 _drawStyle = new DrawUntilFound(_allCards, NUMBER_CARDS);
-            } 
+            }
             else
             {
                 _drawStyle = new DrawSingle(_allCards, NUMBER_CARDS);
@@ -90,10 +90,13 @@ namespace UNOLib
                 _state.OnTable = cardToBePlayed;
                 _state.CardsPlayed.AddLast(cardToBePlayed);
                 CardAction(cardToBePlayed);
-                SetNextPlayer();
             }
         }
 
+        /// <summary>
+        /// Selects the appropriate method for the card played. ColorCards sets the next turn, WildCards wait for the color.
+        /// </summary>
+        /// <param name="card"></param>
         private void CardAction(ICard card)
         {
             if (card is WildCard wildCard)
@@ -101,9 +104,11 @@ namespace UNOLib
                 switch (wildCard.Symbol)
                 {
                     case WildCardSymbols.Simple: //Changes the color on the table
+                        _state.WaitingOnColorChange = true;
                         break;
-                    case WildCardSymbols.PlusFour: //Changes the color on the table and
-                                                   //the next player has to draw 4 cards
+                    case WildCardSymbols.PlusFour: //Changes the color on the table and the next player has to draw 4 cards
+                        _state.WaitingOnColorChange = true;
+                        _state.CardsDrawn = 4;
                         break;
                 }
             }
@@ -124,6 +129,7 @@ namespace UNOLib
                         DrawAndSkip(2);
                         break;
                 }
+                SetNextPlayer();
             }
         }
 
@@ -186,9 +192,25 @@ namespace UNOLib
 
         public void ChangeOnTableColor(string? color)
         {
-            if (_state.OnTable is WildCard wildCard)
-                wildCard.Color = (CardColors)Enum.Parse(typeof(CardColors), color);
-            _state.WaitingOnColorChange = false;
+            if (!_state.WaitingOnColorChange)
+            {
+                throw new CannotChangeColorException();
+            }
+            else if (color is null)
+            {
+                throw new ArgumentException();
+            }
+            else if (_state.OnTable is WildCard wildCard)
+            {
+                wildCard.Color = Enum.Parse<CardColors>(color);
+                _state.ColorChanged = wildCard.Color;
+                _state.WaitingOnColorChange = false;
+                if (_state.CardsDrawn != 0)
+                {
+                    DrawAndSkip(_state.CardsDrawn);
+                }
+                SetNextPlayer();
+            }
         }
 
         public IEnumerator<IPlayer> GetEnumerator()

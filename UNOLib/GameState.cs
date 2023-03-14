@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace UNOLib
+﻿namespace UNOLib
 {
     public struct GameState
     {
@@ -16,7 +14,8 @@ namespace UNOLib
         public CardColors? ColorChanged { get => colorChanged; internal set => colorChanged = value; }
         public bool NewTurn { get; internal set; }
         internal bool ClockwiseOrder { get; set; }
-        internal bool WaitingOnColorChange { get; set; }
+        public bool WaitingOnColorChange { get; internal set; }
+        
 
         private CardColors? colorChanged;
 

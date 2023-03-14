@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UNOLib
+﻿namespace UNOLib
 {
     /// <summary>
     /// Interface for the various draw styles. Handles the card stack and drawing methods
     /// </summary>
-    internal interface DrawStyle
+    internal interface IDrawStyle
     {
         /// <summary>
         /// Adds a card to the played card stack.
@@ -25,10 +19,10 @@ namespace UNOLib
         ICard Draw();
 
         /// <summary>
-        /// Draws the card in the implemented style.
+        /// Draws the card in the implemented style. Changes the GameState accordingly.
         /// </summary>
         /// <param name="state">the state of the game to take into account</param>
         /// <returns>true if the player can play any of the drawn cards, false otherwise</returns>
-        bool GameDraw(GameState state);
+        bool GameDraw(ref GameState state);
     }
 }

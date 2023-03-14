@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UNOLib
+﻿namespace UNOLib
 {
-    internal abstract class AbstractDrawStyle : DrawStyle
+    internal abstract class AbstractDrawStyle : IDrawStyle
     {
         private static readonly Random rng = new();
         private Stack<ICard> _fullDeck;
@@ -34,6 +28,6 @@ namespace UNOLib
             return card;
         }
 
-        public abstract bool GameDraw(GameState state);
+        public abstract bool GameDraw(ref GameState state);
     }
 }

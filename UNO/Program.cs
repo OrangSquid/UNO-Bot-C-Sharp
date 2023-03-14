@@ -73,6 +73,7 @@ namespace UNOConsole
             uno = new(Convert.ToInt32(Console.ReadLine()), settings);
 
             Console.WriteLine("Game created");
+            StateInterpreter(true);
         }
 
         private static void PlayCard()
@@ -95,9 +96,18 @@ namespace UNOConsole
             {
                 Console.WriteLine("Player does not have that card");
             }
+            StateInterpreter(false);
+        }
 
-            Console.WriteLine("----------");
-
+        private static void ChangeColor()
+        {
+            if (uno is null)
+            {
+                return;
+        }
+            string? color = Console.ReadLine();
+            uno.ChangeOnTableColor(color);
+            Console.WriteLine("Color changed to: {0}", color);
         }
 
         private static void CheckCards()
@@ -112,7 +122,7 @@ namespace UNOConsole
                 IPlayer player = uno.GetPlayer(nPlayer);
                 foreach (ICard card in player)
                 {
-                    Console.WriteLine(card.ToString());
+                    Console.WriteLine(card);
                 }
             }
             catch (ArgumentOutOfRangeException)
@@ -129,6 +139,7 @@ namespace UNOConsole
             }
 
             uno.DrawCard();
+            StateInterpreter(false);
         }
 
         private static void CheckState()
@@ -139,7 +150,7 @@ namespace UNOConsole
             }
             foreach (IPlayer player in uno)
             {
-                if(player == uno.State.CurrentPlayer)
+                if (player == uno.State.CurrentPlayer)
                     Console.Write("-> ");
                 else
                     Console.Write("   ");
@@ -147,6 +158,65 @@ namespace UNOConsole
                 Console.WriteLine("P{0}: {1} cards", player.Id, player.NumCards);
             }
             Console.WriteLine(uno.State.OnTable);
+        }
+
+        private static void StateInterpreter(bool newGame)
+        {
+            if (uno is null)
+            {
+                return;
+            }
+
+            Console.WriteLine("---------------");
+
+            if (newGame)
+            {
+                Console.WriteLine("Game started");
+                Console.WriteLine("Card on table: {0}", uno.State.OnTable);
+            }
+            else
+            {
+                // Played a card
+                if (uno.State.CardsPlayed.Count != 0 && uno.State.PreviousPlayer != null)
+                {
+                    Console.WriteLine("Player {0} played:", uno.State.PreviousPlayer.Id);
+                    foreach (ICard card in uno.State.CardsPlayed)
+                    {
+                        Console.WriteLine(card);
+                    }
+
+                }
+                // Cards were drawn
+                if (uno.State.WhoDrewCards != null)
+                {
+                    Console.WriteLine("Player {0} drew {1} cards", uno.State.WhoDrewCards.Id, uno.State.CardsDrawn);
+                }
+                // Players were skipped
+                if (uno.State.PlayersSkiped.Count != 0)
+                {
+                    Console.WriteLine("These Players were skipped: ");
+                    foreach (IPlayer player in uno.State.PlayersSkiped)
+                    {
+                        Console.WriteLine("Player {0}", player.Id);
+                    }
+                }
+                // The order was reversed
+                if (uno.State.JustReversedOrder)
+                {
+                    Console.WriteLine("The order has been reversed");
+                }
+                // Waiting for the color to change
+                if (uno.State.WaitingOnColorChange)
+                {
+                    Console.WriteLine("Waiting for Player {0} to choose a color", uno.State.CurrentPlayer);
+                }
+            }
+            if (uno.State.NewTurn)
+            {
+                Console.WriteLine("Your turn now: {0}", uno.State.CurrentPlayer.Id);
+            }
+
+            Console.WriteLine("---------------");
         }
     }
 }

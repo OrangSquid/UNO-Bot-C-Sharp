@@ -15,7 +15,7 @@ namespace UNOLib
 
         private readonly Settings _settings;
         private readonly List<IPlayer> _playersByOrder;
-        private DrawStyle _drawStyle;
+        private IDrawStyle _drawStyle;
         private GameState _state;
 
         public GameState State { get => _state; }
@@ -52,7 +52,7 @@ namespace UNOLib
         public GameSystem(int nPlayers, Settings settings)
         {
             // Create DrawStyle
-            if(settings.DrawUntilPlayableCard)
+            if (settings.DrawUntilPlayableCard)
             {
                 _drawStyle = new DrawUntilFound(_allCards, NUMBER_CARDS);
             } 
@@ -85,6 +85,7 @@ namespace UNOLib
             {
                 _state.CurrentPlayer.RemoveCard(cardId);
                 _state.Refresh();
+                _state.PreviousPlayer = _state.CurrentPlayer;
                 _drawStyle.Push(_state.OnTable);
                 _state.OnTable = cardToBePlayed;
                 _state.CardsPlayed.AddLast(cardToBePlayed);
@@ -116,7 +117,7 @@ namespace UNOLib
                     case ColorCardSymbols.Reverse: //Reverses the order of players in the next round
                         _state.ReverseOrder();
                         if (_playersByOrder.Count == 2)
-                            SetNextPlayer();
+                            SelectNextPlayer();
                         break;
                     case ColorCardSymbols.PlusTwo: //Next player has to draw 2 cards
                         // TODO make it stack
@@ -131,33 +132,63 @@ namespace UNOLib
             return _playersByOrder[id];
         }
 
+        /// <summary>
+        /// Should be caled when the current player wants or needs to draw cards
+        /// </summary>
         public void DrawCard()
         {
             _state.Refresh();
-            if(!_drawStyle.GameDraw(_state))
+            _state.PreviousPlayer = _state.CurrentPlayer;
+            if (!_drawStyle.GameDraw(ref _state))
                 SetNextPlayer();
         }
 
-        public void DrawAndSkip(int cardsToDraw)
+        /// <summary>
+        /// Sets new current player. Does not make it ready for a new turn. Should only be used for
+        /// as an auxilary method for skipping and forcibly drawing cards.
+        /// </summary>
+        private void SelectNextPlayer()
         {
-            SetNextPlayer();
-            for (int i = 0; i < cardsToDraw; i++)
-                _state.CurrentPlayer.AddCard(_drawStyle.Draw());
-        }
-
-
-        private void SetNextPlayer()
-        {
-            if(_state.ClockwiseOrder)
+            if (_state.ClockwiseOrder)
                 _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + 1) % _playersByOrder.Count];
             else
                 _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + _playersByOrder.Count - 1) % _playersByOrder.Count];
         }
 
+        /// <summary>
+        /// Should be called when the next player is forced to draw cards
+        /// </summary>
+        /// <param name="cardsToDraw">The number of cards that must be drawn</param>
+        public void DrawAndSkip(int cardsToDraw)
+        {
+            SkipPlayer();
+            for (int i = 0; i < cardsToDraw; i++)
+                _state.CurrentPlayer.AddCard(_drawStyle.Draw());
+        }
+
+        /// <summary>
+        /// Sets new current player and prepares it for a new turn.
+        /// </summary>
+        private void SetNextPlayer()
+        {
+            SelectNextPlayer();
+            _state.NewTurn = true;
+        }
+
+        /// <summary>
+        /// Skips the next player when a Skip Card
+        /// </summary>
         private void SkipPlayer()
         {
-            SetNextPlayer();
+            SelectNextPlayer();
             _state.PlayersSkiped.Add(_state.CurrentPlayer);
+        }
+
+        public void ChangeOnTableColor(string? color)
+        {
+            if (_state.OnTable is WildCard wildCard)
+                wildCard.Color = (CardColors)Enum.Parse(typeof(CardColors), color);
+            _state.WaitingOnColorChange = false;
         }
 
         public IEnumerator<IPlayer> GetEnumerator()

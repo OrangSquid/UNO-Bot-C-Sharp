@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UNOLib
+﻿namespace UNOLib
 {
     /// <summary>
     /// Draw a single card
@@ -13,7 +7,7 @@ namespace UNOLib
     {
         public DrawSingle(List<ICard> fullDeck, int number_total_cards) : base(fullDeck, number_total_cards) { }
 
-        public override bool GameDraw(GameState state)
+        public override bool GameDraw(ref GameState state)
         {
             ICard card = Draw();
             state.CurrentPlayer.AddCard(card);

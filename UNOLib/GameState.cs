@@ -18,7 +18,7 @@
         internal bool ClockwiseOrder { get; set; }
         public bool WaitingOnColorChange { get; internal set; }
         public bool GameFinished { get; internal set; }
-        
+
 
         private CardColors? colorChanged;
 

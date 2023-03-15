@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 
 namespace UNOLib
-{   
+{
     /// <summary>
     /// Enumerator that iterates over all the cards in a Player's Deck
     /// </summary>

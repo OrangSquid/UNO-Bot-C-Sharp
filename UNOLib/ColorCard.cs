@@ -1,5 +1,5 @@
 ﻿namespace UNOLib
-{   
+{
     /// <summary>
     /// Color Cards
     /// </summary>

@@ -1,10 +1,10 @@
 ﻿
 namespace UNOLib
 {
-   /// <summary>
-   /// Enumeration with the card colors
-   /// </summary>
-   public enum CardColors
+    /// <summary>
+    /// Enumeration with the card colors
+    /// </summary>
+    public enum CardColors
     {
         Red,
         Green,
@@ -47,7 +47,7 @@ namespace UNOLib
     public interface ICard
     {
         internal CardColors Color { get; }
-        
+
         /// <summary>
         /// Checks if the given card can be played on top of the card on the table
         /// </summary>

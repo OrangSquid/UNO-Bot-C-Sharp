@@ -238,6 +238,8 @@ namespace UNOLib
             SkipPlayer();
             for (int i = 0; i < cardsToDraw; i++)
                 _state.CurrentPlayer.AddCard(_drawStyle.Draw());
+            _state.CardsDrawn = cardsToDraw;
+            _state.WhoDrewCards = _state.CurrentPlayer;
         }
 
         /// <summary>

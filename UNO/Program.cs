@@ -72,7 +72,7 @@ namespace UNOConsole
                                     numSevenPlayed,
                                     noUNOPenalty);
 
-            Console.WriteLine("numPlayerd");
+            Console.WriteLine("numPlayers");
             uno = new(Convert.ToInt32(Console.ReadLine()), settings);
 
             Console.WriteLine("Game created");
@@ -90,6 +90,7 @@ namespace UNOConsole
             {
                 if (cardId != null)
                     uno.CardPlay(cardId);
+                StateInterpreter(false);
             }
             catch (CardCannotBePlayedException)
             {
@@ -99,7 +100,10 @@ namespace UNOConsole
             {
                 Console.WriteLine("Player does not have that card");
             }
-            StateInterpreter(false);
+            catch (GameIsFinishedException)
+            {
+                Console.WriteLine("Games has finished");
+            }
         }
 
         private static void ChangeColor()
@@ -112,7 +116,7 @@ namespace UNOConsole
             try
             {
                 uno.ChangeOnTableColor(color);
-                Console.WriteLine("Color changed to: {0}", color);
+                StateInterpreter(false);
             }
             catch (ArgumentException)
             {
@@ -147,9 +151,15 @@ namespace UNOConsole
             {
                 return;
             }
-
-            uno.DrawCard();
-            StateInterpreter(false);
+            try
+            {
+                uno.DrawCard();
+                StateInterpreter(false);
+            } 
+            catch (GameIsFinishedException)
+            {
+                Console.WriteLine("Games has finished");
+            }
         }
 
         private static void CheckState()
@@ -218,7 +228,15 @@ namespace UNOConsole
                 // Waiting for the color to change
                 if (uno.State.WaitingOnColorChange)
                 {
-                    Console.WriteLine("Waiting for Player {0} to choose a color", uno.State.CurrentPlayer);
+                    Console.WriteLine("Waiting for Player {0} to choose a color", uno.State.CurrentPlayer.Id);
+                }
+                if(uno.State.ColorChanged != null)
+                {
+                    Console.WriteLine("Color changed to: {0}", uno.State.ColorChanged);
+                }
+                if(uno.State.GameFinished)
+                {
+                    Console.WriteLine("Game has ended");
                 }
             }
             if (uno.State.NewTurn)

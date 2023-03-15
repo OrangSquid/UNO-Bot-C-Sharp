@@ -1,51 +1,50 @@
 ﻿using System.Collections;
 
-namespace UNOLib
-{   
-    /// <summary>
-    /// Enumerator that iterates over all the cards in a Player's Deck
-    /// </summary>
-    public class PlayerDeckEnumerator : IEnumerator<ICard>
+namespace UNOLib;
+
+/// <summary>
+/// Enumerator that iterates over all the cards in a Player's Deck
+/// </summary>
+public class PlayerDeckEnumerator : IEnumerator<ICard>
+{
+    public ICard Current => _stackEnumerator.Current;
+
+    object IEnumerator.Current => Current;
+
+    private IEnumerator<ICard> _stackEnumerator;
+    private SortedDictionary<string, Stack<ICard>>.Enumerator _dictionaryEnumerator;
+
+    public PlayerDeckEnumerator(SortedDictionary<string, Stack<ICard>>.Enumerator enumerator)
     {
-        public ICard Current => _stackEnumerator.Current;
+        // TODO Possible null dereference
+        _dictionaryEnumerator = enumerator;
+        _ = enumerator.MoveNext();
+        _stackEnumerator = enumerator.Current.Value.GetEnumerator();
+    }
 
-        object IEnumerator.Current => Current;
+    public void Dispose()
+    {
+        _stackEnumerator.Dispose();
+        _dictionaryEnumerator.Dispose();
+    }
 
-        private IEnumerator<ICard> _stackEnumerator;
-        private SortedDictionary<string, Stack<ICard>>.Enumerator _dictionaryEnumerator;
-
-        public PlayerDeckEnumerator(SortedDictionary<string, Stack<ICard>>.Enumerator enumerator)
+    public bool MoveNext()
+    {
+        if (_stackEnumerator.MoveNext())
         {
-            // TODO Possible null dereference
-            _dictionaryEnumerator = enumerator;
-            _ = enumerator.MoveNext();
-            _stackEnumerator = enumerator.Current.Value.GetEnumerator();
+            return true;
         }
-
-        public void Dispose()
+        if (_dictionaryEnumerator.MoveNext())
         {
             _stackEnumerator.Dispose();
-            _dictionaryEnumerator.Dispose();
+            _stackEnumerator = _dictionaryEnumerator.Current.Value.GetEnumerator();
+            return MoveNext();
         }
+        return false;
+    }
 
-        public bool MoveNext()
-        {
-            if (_stackEnumerator.MoveNext())
-            {
-                return true;
-            }
-            else if (_dictionaryEnumerator.MoveNext())
-            {
-                _stackEnumerator.Dispose();
-                _stackEnumerator = _dictionaryEnumerator.Current.Value.GetEnumerator();
-                return MoveNext();
-            }
-            return false;
-        }
-
-        public void Reset()
-        {
-            throw new NotImplementedException();
-        }
+    public void Reset()
+    {
+        throw new NotImplementedException();
     }
 }

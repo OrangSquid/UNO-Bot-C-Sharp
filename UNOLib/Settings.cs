@@ -10,7 +10,7 @@ public readonly struct Settings
     //public bool StackWildPlusFour { get; }
     //public bool MustPlay { get; }
     //public bool JumpIn { get; }
-    public bool DrawUntilPlayableCard { get; }
+    public bool DrawUntilPlayableCard { get; init; }
     //public bool NumZeroPlayed { get; }
     //public bool NumSevenPlayed { get; }
     //public int NoUNOPenalty { get; }

@@ -1,4 +1,5 @@
 ﻿namespace UNODiscordBot.Exceptions;
-    public class GameAlreadyStartedException : Exception
-    {
-    }
+
+public class GameAlreadyStartedException : Exception
+{
+}

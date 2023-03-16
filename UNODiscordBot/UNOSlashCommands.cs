@@ -1,5 +1,7 @@
 ﻿using DSharpPlus.SlashCommands;
 using UNODiscordBot.Exceptions;
+using UNOLib;
+using static UNODiscordBot.UNOLibWrapper;
 
 namespace UNODiscordBot;
 
@@ -27,7 +29,7 @@ public class UNOSlashCommands : ApplicationCommandModule
         try
         {
             Uno.JoinGame(ctx.Guild.Id, ctx.User);
-            await ctx.CreateResponseAsync("Joined Lobby");
+            await ctx.CreateResponseAsync("{ctx.User.ToString} Joined Lobby");
         }
         catch (GameDoesNotExistException)
         {
@@ -54,6 +56,75 @@ public class UNOSlashCommands : ApplicationCommandModule
         catch (GameDoesNotExistException)
         {
             await ctx.CreateResponseAsync("Game Does Not Exist");
+        }
+    }
+
+    //TODO
+    [SlashCommand("play", "Plays a given card")]
+    public async Task PlayCardCommand(InteractionContext ctx, [Option("card", "a", true)][Autocomplete(typeof(CardAutocompleteProvider))] string card)
+    {
+        try
+        {
+            
+            await ctx.CreateResponseAsync($"{ctx.User.ToString} Joined Lobby");
+        }
+        catch (GameDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("Game Does Not Exist");
+        }
+    }
+
+    //TODO
+    [SlashCommand("choose", "Choose the color after playing a Wild Card")]
+    public async Task ChooseColorCommand(InteractionContext ctx)
+    {
+        try
+        {
+            
+            await ctx.CreateResponseAsync("{ctx.User.ToString} Joined Lobby");
+        }
+        catch (GameDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("Game Does Not Exist");
+        }
+    }
+
+    //TODO
+    [SlashCommand("draw", "Draws a card by the chosen rule set")]
+    public async Task DrawCardCommand(InteractionContext ctx)
+    {
+        try
+        {
+            Uno.JoinGame(ctx.Guild.Id, ctx.User);
+            await ctx.CreateResponseAsync("{ctx.User.ToString} Joined Lobby");
+        }
+        catch (GameDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("Game Does Not Exist");
+        }
+    }
+
+    [SlashCommand("check", "Shows your current deck")]
+    public async Task CheckCommand(InteractionContext ctx)
+    {
+        try
+        {
+            IPlayer player = Uno.CheckCards(ctx.Guild.Id, ctx.User);
+            string message = "Here's your current deck:\n";
+            foreach(ICard card in player)
+            {
+                message += card.ToString();
+                message += "\n";
+            }
+            await ctx.CreateResponseAsync(message, true);
+        }
+        catch (GameDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+        }
+        catch(PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
         }
     }
 

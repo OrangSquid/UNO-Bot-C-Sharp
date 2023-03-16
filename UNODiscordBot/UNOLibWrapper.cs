@@ -7,7 +7,7 @@ namespace UNODiscordBot;
 public class UNOLibWrapper
 {
     private readonly Dictionary<ulong, List<DiscordUser>> _guild_lobbies;
-    private readonly Dictionary<ulong, GameSystem> _guild_games;
+    private readonly Dictionary<ulong, GameStruct> _guild_games;
 
     public UNOLibWrapper()
     {
@@ -52,8 +52,21 @@ public class UNOLibWrapper
             throw new GameDoesNotExistException();
         }
         int nPlayers = lobby.Count;
-        Settings settings = new(false, false, false, false, false, false, false, false, 2);
+        Settings settings = new()
+        {
+            DrawUntilPlayableCard = false
+        };
         GameSystem gs = new(nPlayers, settings);
-        _guild_games.Add(guildId, gs);
+        _guild_games.Add(guildId, new GameStruct(gs, lobby));
+        _guild_lobbies.Remove(guildId);
+    }
+
+    public IPlayer CheckCards(ulong guildId, DiscordUser player)
+    {
+        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        return game.GetPlayer(player);
     }
 }

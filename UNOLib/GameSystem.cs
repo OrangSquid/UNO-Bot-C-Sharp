@@ -86,33 +86,34 @@ public class GameSystem : IEnumerable<IPlayer>
     /// <param name="cardId">Id of the card to be played</param>
     /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
     /// <exception cref="CardCannotBePlayedException">Card does not meet the requirements to be played or does not exist at all.</exception>
-    public void CardPlay(string cardId)
+    public void CardPlay(int playerId, string cardId)
     {
         if (_state.GameFinished)
         {
             throw new GameIsFinishedException();
         }
         // Check if card is present in the dictionary for all cards and if card can be played on top of current one
-        else if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_state.OnTable.CanBePlayed(cardToBePlayed))
+        if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_state.OnTable.CanBePlayed(cardToBePlayed))
         {
             throw new CardCannotBePlayedException();
         }
+        if (playerId != _state.CurrentPlayer.Id)
+        {
+            throw new NotPlayersTurnException();
+        }
+        _state.CurrentPlayer.RemoveCard(cardId);
+        _state.Refresh();
+        _state.PreviousPlayer = _state.CurrentPlayer;
+        _drawStyle.Push(_state.OnTable);
+        _state.OnTable = cardToBePlayed;
+        _state.CardsPlayed.AddLast(cardToBePlayed);
+        if (_state.CurrentPlayer.NumCards == 0)
+        {
+            _state.GameFinished = true;
+        }
         else
         {
-            _state.CurrentPlayer.RemoveCard(cardId);
-            _state.Refresh();
-            _state.PreviousPlayer = _state.CurrentPlayer;
-            _drawStyle.Push(_state.OnTable);
-            _state.OnTable = cardToBePlayed;
-            _state.CardsPlayed.AddLast(cardToBePlayed);
-            if (_state.CurrentPlayer.NumCards == 0)
-            {
-                _state.GameFinished = true;
-            }
-            else
-            {
-                CardAction(cardToBePlayed);
-            }
+            CardAction(cardToBePlayed);
         }
     }
 

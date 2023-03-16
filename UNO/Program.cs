@@ -89,10 +89,11 @@ public static class Program
             return;
         }
         string? cardId = Console.ReadLine();
+        int playerId = Convert.ToInt32(Console.ReadLine());
         try
         {
             if (cardId != null)
-                uno.CardPlay(cardId);
+                uno.CardPlay(playerId, cardId);
             StateInterpreter(false);
         }
         catch (CardCannotBePlayedException)
@@ -106,6 +107,10 @@ public static class Program
         catch (GameIsFinishedException)
         {
             Console.WriteLine("Games has finished");
+        }
+        catch(NotPlayersTurnException)
+        {
+            Console.WriteLine("Not player's turn");
         }
     }
 

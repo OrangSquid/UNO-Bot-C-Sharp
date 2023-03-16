@@ -15,7 +15,7 @@ public class GameSystem : IEnumerable<IPlayer>
 
     private readonly Settings _settings;
     private readonly List<IPlayer> _playersByOrder;
-    private IDrawStyle _drawStyle;
+    private readonly IDrawStyle _drawStyle;
     private GameState _state;
 
     public GameState State { get => _state; }

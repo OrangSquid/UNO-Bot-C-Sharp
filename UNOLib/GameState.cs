@@ -2,7 +2,6 @@
 
 public struct GameState
 {
-
     public ICard OnTable { get; internal set; }
     public LinkedList<ICard> CardsPlayed { get; internal set; }
     public IPlayer CurrentPlayer { get; internal set; }

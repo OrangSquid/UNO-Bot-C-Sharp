@@ -47,7 +47,7 @@ internal enum WildCardSymbols
 public interface ICard
 {
     internal CardColors Color { get; }
-    
+
     /// <summary>
     /// Checks if the given card can be played on top of the card on the table
     /// </summary>

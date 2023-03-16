@@ -4,7 +4,7 @@ internal abstract class AbstractDrawStyle : IDrawStyle
 {
     private static readonly Random rng = new();
     private Stack<ICard> _fullDeck;
-    private List<ICard> _playedCards;
+    private readonly List<ICard> _playedCards;
 
     protected AbstractDrawStyle(List<ICard> fullDeck, int number_total_cards)
     {

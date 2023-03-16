@@ -131,11 +131,15 @@ public class GameSystem : IEnumerable<IPlayer>
     /// Should be caled when the current player wants or needs to draw cards
     /// </summary>
     /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
-    public void DrawCard()
+    public void DrawCard(int playerId)
     {
         if (_state.GameFinished)
         {
             throw new GameIsFinishedException();
+        }
+        if (playerId != _state.CurrentPlayer.Id)
+        {
+            throw new NotPlayersTurnException();
         }
         _state.Refresh();
         _state.PreviousPlayer = _state.CurrentPlayer;
@@ -151,7 +155,7 @@ public class GameSystem : IEnumerable<IPlayer>
     /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
     /// <exception cref="CannotChangeColorException">Cannot change the color because there was no Wild Card played.</exception>
     /// <exception cref="ArgumentException">color is invalid.</exception>
-    public void ChangeOnTableColor(string color)
+    public void ChangeOnTableColor(int playerId, string color)
     {
         if (_state.GameFinished)
         {
@@ -160,6 +164,10 @@ public class GameSystem : IEnumerable<IPlayer>
         else if (!_state.WaitingOnColorChange)
         {
             throw new CannotChangeColorException();
+        }
+        if (playerId != _state.CurrentPlayer.Id)
+        {
+            throw new NotPlayersTurnException();
         }
         else if (_state.OnTable is WildCard wildCard)
         {

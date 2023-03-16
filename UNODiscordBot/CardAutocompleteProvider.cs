@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
-using UNODiscordBot.Exceptions;
 using UNOLib;
 
 namespace UNODiscordBot;
@@ -15,17 +14,16 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         {
             IPlayer player = ulw.CheckCards(ctx.Guild.Id, ctx.User);
             var cardChoices = new List<DiscordAutoCompleteChoice>(player.NumCards);
-            int i = 0;
-            foreach(ICard card in player)
+            foreach (ICard card in player)
             {
-                cardChoices.Add(new DiscordAutoCompleteChoice(card.ToString(), "lmao"));
+                cardChoices.Add(new DiscordAutoCompleteChoice(card.ToString(), card.ToString()));
             }
             return cardChoices;
         }
         // TODO catch proper exceptions
-        catch(Exception)
+        catch (Exception)
         {
-            return new DiscordAutoCompleteChoice[] 
+            return new DiscordAutoCompleteChoice[]
             {
                 new DiscordAutoCompleteChoice("testing", "testing")
             };

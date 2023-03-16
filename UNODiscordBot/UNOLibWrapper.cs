@@ -17,7 +17,7 @@ public class UNOLibWrapper
 
     public void CreateGame(ulong guildId, DiscordUser user)
     {
-        if (_guild_lobbies.ContainsKey(guildId))
+        if (_guild_lobbies.ContainsKey(guildId) || _guild_games.ContainsKey(guildId))
         {
             throw new GameAlreadyExistsException();
         }
@@ -41,7 +41,7 @@ public class UNOLibWrapper
         lobby.Insert(lobby.Count, user);
     }
 
-    public void StartGame(ulong guildId)
+    public GameState StartGame(ulong guildId)
     {
         if (_guild_games.ContainsKey(guildId))
         {
@@ -57,8 +57,13 @@ public class UNOLibWrapper
             DrawUntilPlayableCard = false
         };
         GameSystem gs = new(nPlayers, settings);
-        _guild_games.Add(guildId, new GameStruct(gs, lobby));
+        _guild_games.Add(guildId, new GameStruct()
+        {
+            Gs = gs,
+            Players = lobby
+        });
         _guild_lobbies.Remove(guildId);
+        return gs.State;
     }
 
     public IPlayer CheckCards(ulong guildId, DiscordUser player)
@@ -67,6 +72,60 @@ public class UNOLibWrapper
         {
             throw new GameDoesNotExistException();
         }
-        return game.GetPlayer(player);
+        return GetPlayer(game, player);
+    }
+
+    public GameState PlayCard(ulong guildId, DiscordUser player, string card)
+    {
+        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        game.Gs.CardPlay(GetPlayerId(game, player), card);
+        return game.Gs.State;
+    }
+
+    public GameState DrawCard(ulong guildId, DiscordUser player)
+    {
+        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        game.Gs.DrawCard(GetPlayerId(game, player));
+        return game.Gs.State;
+    }
+
+    public GameState ChangeColor(ulong guildId, DiscordUser player, string color)
+    {
+        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        game.Gs.ChangeOnTableColor(GetPlayerId(game, player), color);
+        return game.Gs.State;
+    }
+
+    public DiscordUser GetUser(ulong guildId, int playerId)
+    {
+        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        return game.Players[playerId];
+    }
+
+    private static int GetPlayerId(GameStruct game, DiscordUser player)
+    {
+        int playerId = game.Players.IndexOf(player);
+        if (playerId == -1)
+        {
+            throw new PlayerDoesNotExistException();
+        }
+        return playerId;
+    }
+
+    private static IPlayer GetPlayer(GameStruct game, DiscordUser player)
+    {
+        return game.Gs.GetPlayer(GetPlayerId(game, player));
     }
 }

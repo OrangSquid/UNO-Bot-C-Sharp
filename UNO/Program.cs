@@ -121,9 +121,10 @@ public static class Program
             return;
         }
         string? color = Console.ReadLine();
+        int playerId = Convert.ToInt32(Console.ReadLine());
         try
         {
-            uno.ChangeOnTableColor(color);
+            uno.ChangeOnTableColor(playerId, color);
             StateInterpreter(false);
         }
         catch (ArgumentException)
@@ -161,7 +162,8 @@ public static class Program
         }
         try
         {
-            uno.DrawCard();
+            int playerId = Convert.ToInt32(Console.ReadLine());
+            uno.DrawCard(playerId);
             StateInterpreter(false);
         } 
         catch (GameIsFinishedException)

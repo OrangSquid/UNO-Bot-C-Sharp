@@ -158,7 +158,7 @@ public static class Program
         {
             uno.DrawCard();
             StateInterpreter(false);
-        } 
+        }
         catch (GameIsFinishedException)
         {
             Console.WriteLine("Games has finished");
@@ -233,11 +233,11 @@ public static class Program
             {
                 Console.WriteLine("Waiting for Player {0} to choose a color", uno.State.CurrentPlayer.Id);
             }
-            if(uno.State.ColorChanged != null)
+            if (uno.State.ColorChanged != null)
             {
                 Console.WriteLine("Color changed to: {0}", uno.State.ColorChanged);
             }
-            if(uno.State.GameFinished)
+            if (uno.State.GameFinished)
             {
                 Console.WriteLine("Game has ended");
             }

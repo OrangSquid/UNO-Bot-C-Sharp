@@ -52,11 +52,11 @@ public class UNOLibWrapper
             throw new GameDoesNotExistException();
         }
         int nPlayers = lobby.Count;
-        Settings settings = new()
+        GameSystemFactory gsf = new(nPlayers)
         {
             DrawUntilPlayableCard = false
         };
-        GameSystem gs = new(nPlayers, settings);
+        GameSystem gs = gsf.Build();
         _guild_games.Add(guildId, new GameStruct()
         {
             Gs = gs,

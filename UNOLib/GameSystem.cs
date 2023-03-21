@@ -6,66 +6,24 @@ namespace UNOLib;
 public class GameSystem : IEnumerable<IPlayer>
 {
     private const int CARDS_PER_PLAYER = 7;
-    private const int NUMBER_CARDS = 108;
-    private const int NUMBER_OF_ZEROS = 1;
-    private const int NUMBER_OF_EACH_COLOR_CARD = 2;
-    private const int NUMBER_OF_EACH_WILD_CARD = 4;
-    private static readonly Dictionary<string, ICard> _allCardsDict;
-    private static readonly List<ICard> _allCards;
 
-    private readonly Settings _settings;
+    private readonly Dictionary<string, ICard> _allCardsDict;
     private readonly List<IPlayer> _playersByOrder;
     private readonly IDrawStyle _drawStyle;
     private GameState _state;
 
     public GameState State { get => _state; }
 
-    static GameSystem()
-    {
-        _allCardsDict = new(NUMBER_CARDS);
-        _allCards = new(NUMBER_CARDS);
-        foreach (CardColors color in Enum.GetValuesAsUnderlyingType<CardColors>())
-        {
-            foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
-            {
-                ICard card = new ColorCard(color, symbol);
-                _allCardsDict.Add(card.ToString(), card);
-                int i = symbol == ColorCardSymbols.Zero ? NUMBER_OF_ZEROS : NUMBER_OF_EACH_COLOR_CARD;
-                for (; i > 0; i--)
-                {
-                    _allCards.Add(card);
-                }
-            }
-        }
-        foreach (WildCardSymbols symbol in Enum.GetValuesAsUnderlyingType<WildCardSymbols>())
-        {
-            // CardColors.RED is simply used as a placeholder
-            ICard card = new WildCard(CardColors.Red, symbol);
-            _allCardsDict.Add(card.ToString(), card);
-            for (int i = 0; i < NUMBER_OF_EACH_WILD_CARD; i++)
-            {
-                _allCards.Add(card);
-            }
-        }
-    }
-
     /// <summary>
     /// Game System constructor. Received the number of players and the chosen settings.
     /// </summary>
     /// <param name="nPlayers">Number of Players in the game</param>
     /// <param name="settings">Settings object containing the chosen settings</param>
-    public GameSystem(int nPlayers, Settings settings)
+    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle)
     {
-        // Create DrawStyle
-        if (settings.DrawUntilPlayableCard)
-        {
-            _drawStyle = new DrawUntilFound(_allCards, NUMBER_CARDS);
-        }
-        else
-        {
-            _drawStyle = new DrawSingle(_allCards, NUMBER_CARDS);
-        }
         _playersByOrder = new(nPlayers);
+        _allCardsDict = allCardsDict;
+        _drawStyle = drawStyle;
         for (int i = 0; i < nPlayers; i++)
         {
             IPlayer player = new Player(i);
@@ -75,7 +33,6 @@ public class GameSystem : IEnumerable<IPlayer>
                 player.AddCard(_drawStyle.Draw());
             }
         }
-        _settings = settings;
         _state = new GameState(_drawStyle.Draw(), _playersByOrder.First(), _playersByOrder.Count);
     }
 

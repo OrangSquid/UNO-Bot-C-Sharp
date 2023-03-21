@@ -76,7 +76,12 @@ public static class Program
                                 noUNOPenalty);
 
         Console.WriteLine("numPlayers");
-        uno = new(Convert.ToInt32(Console.ReadLine()), settings);
+        int nPlayers = Convert.ToInt32(Console.ReadLine());
+        GameSystemFactory gsf = new(nPlayers)
+        {
+            DrawUntilPlayableCard = drawUntilPlayableCard
+        };
+        uno = gsf.Build();
 
         Console.WriteLine("Game created");
         StateInterpreter(true);

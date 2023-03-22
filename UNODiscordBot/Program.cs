@@ -9,14 +9,10 @@ public class Program
     public static async Task Main()
     {
         Console.WriteLine("Main/Dev");
-        string choice = Console.ReadLine();
-        string token;
-        if (choice == "m")
-            token = File.ReadAllText("MToken.txt");
-        else
-            token = File.ReadAllText("DToken.txt");
+        string choice = Console.ReadLine() ?? string.Empty;
+        string token = File.ReadAllText(choice == "m" ? "MToken.txt" : "DToken.txt");
 
-        DiscordClient discord = new(new DiscordConfiguration()
+        DiscordClient discord = new(new DiscordConfiguration
         {
             Token = token,
             TokenType = TokenType.Bot,
@@ -24,7 +20,7 @@ public class Program
         });
 
         ServiceProvider services = new ServiceCollection()
-            .AddSingleton<UNOLibWrapper>()
+            .AddSingleton<UnoLibWrapper>()
             .BuildServiceProvider();
 
         SlashCommandsExtension slash = discord.UseSlashCommands(new SlashCommandsConfiguration()
@@ -32,7 +28,7 @@ public class Program
             Services = services
         });
 
-        slash.RegisterCommands<UNOSlashCommands>(556652655397830657);
+        slash.RegisterCommands<UnoSlashCommands>(556652655397830657);
 
         await discord.ConnectAsync();
         await Task.Delay(-1);

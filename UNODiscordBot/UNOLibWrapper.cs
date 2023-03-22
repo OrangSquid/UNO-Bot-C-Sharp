@@ -4,33 +4,33 @@ using UNOLib;
 
 namespace UNODiscordBot;
 
-public class UNOLibWrapper
+public class UnoLibWrapper
 {
-    private readonly Dictionary<ulong, List<DiscordUser>> _guild_lobbies;
-    private readonly Dictionary<ulong, GameStruct> _guild_games;
+    private readonly Dictionary<ulong, List<DiscordUser>> _guildLobbies;
+    private readonly Dictionary<ulong, GameStruct> _guildGames;
 
-    public UNOLibWrapper()
+    public UnoLibWrapper()
     {
-        _guild_lobbies = new();
-        _guild_games = new();
+        _guildLobbies = new();
+        _guildGames = new();
     }
 
     public void CreateGame(ulong guildId, DiscordUser user)
     {
-        if (_guild_lobbies.ContainsKey(guildId) || _guild_games.ContainsKey(guildId))
+        if (_guildLobbies.ContainsKey(guildId) || _guildGames.ContainsKey(guildId))
         {
             throw new GameAlreadyExistsException();
         }
-        List<DiscordUser> user_list = new()
+        List<DiscordUser> userList = new()
         {
             user
         };
-        _guild_lobbies.Add(guildId, user_list);
+        _guildLobbies.Add(guildId, userList);
     }
 
     public void JoinGame(ulong guildId, DiscordUser user)
     {
-        if (!_guild_lobbies.TryGetValue(guildId, out List<DiscordUser>? lobby))
+        if (!_guildLobbies.TryGetValue(guildId, out List<DiscordUser>? lobby))
         {
             throw new GameDoesNotExistException();
         }
@@ -43,34 +43,34 @@ public class UNOLibWrapper
 
     public GameState StartGame(ulong guildId)
     {
-        if (_guild_games.ContainsKey(guildId))
+        if (_guildGames.ContainsKey(guildId))
         {
             throw new GameAlreadyStartedException();
         }
-        if (!_guild_lobbies.TryGetValue(guildId, out List<DiscordUser>? lobby))
+        if (!_guildLobbies.TryGetValue(guildId, out List<DiscordUser>? lobby))
         {
             throw new GameDoesNotExistException();
         }
         int nPlayers = lobby.Count;
         GameSystemFactory gsf = new(nPlayers)
         {
-            DrawUntilPlayableCard = true,
+            DrawUntilPlayableCard = false,
             StackPlusTwo = true,
             MustPlay = false
         };
-        GameSystem gs = gsf.Build();
-        _guild_games.Add(guildId, new GameStruct()
+        IGameSystem gs = gsf.Build();
+        _guildGames.Add(guildId, new GameStruct()
         {
             Gs = gs,
             Players = lobby
         });
-        _guild_lobbies.Remove(guildId);
+        _guildLobbies.Remove(guildId);
         return gs.State;
     }
 
     public IPlayer CheckCards(ulong guildId, DiscordUser player)
     {
-        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {
             throw new GameDoesNotExistException();
         }
@@ -79,7 +79,7 @@ public class UNOLibWrapper
 
     public GameState PlayCard(ulong guildId, DiscordUser player, string card)
     {
-        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {
             throw new GameDoesNotExistException();
         }
@@ -89,7 +89,7 @@ public class UNOLibWrapper
 
     public GameState DrawCard(ulong guildId, DiscordUser player)
     {
-        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {
             throw new GameDoesNotExistException();
         }
@@ -99,7 +99,7 @@ public class UNOLibWrapper
 
     public GameState ChangeColor(ulong guildId, DiscordUser player, string color)
     {
-        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {
             throw new GameDoesNotExistException();
         }
@@ -109,7 +109,7 @@ public class UNOLibWrapper
 
     public DiscordUser GetUser(ulong guildId, int playerId)
     {
-        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {
             throw new GameDoesNotExistException();
         }
@@ -118,7 +118,7 @@ public class UNOLibWrapper
 
     public GameState Skip(ulong guildId, DiscordUser player) 
     {
-        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {
             throw new GameDoesNotExistException();
         }

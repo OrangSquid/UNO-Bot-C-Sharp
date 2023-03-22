@@ -11,22 +11,14 @@ internal class CardComparer : Comparer<string>
             {
                 return x.CompareTo(y);
             }
-            else
-            {
-                return -1;
-            }
+
+            return -1;
         }
-        else
+        if (y.StartsWith("Wild"))
         {
-            if (y.StartsWith("Wild"))
-            {
-                return 1;
-            }
-            else
-            {
-                return x.CompareTo(y);
-            }
+            return 1;
         }
-            
+        return x.CompareTo(y);
+
     }
 }

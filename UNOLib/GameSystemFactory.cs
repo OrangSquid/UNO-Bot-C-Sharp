@@ -5,13 +5,13 @@ namespace UNOLib;
 
 public class GameSystemFactory
 {
-    private const int NUMBER_CARDS = 108;
-    private const int NUMBER_OF_ZEROS = 1;
-    private const int NUMBER_OF_EACH_COLOR_CARD = 2;
-    private const int NUMBER_OF_EACH_WILD_CARD = 4;
+    private const int NumberCards = 108;
+    private const int NumberOfZeros = 1;
+    private const int NumberOfEachColorCard = 2;
+    private const int NumberOfEachWildCard = 4;
 
-    private static readonly Dictionary<string, ICard> _allCardsDict;
-    private static readonly List<ICard> _allCards;
+    private static readonly Dictionary<string, ICard> AllCardsDict;
+    private static readonly List<ICard> AllCards;
     private readonly int _nPlayers;
 
     public bool DrawUntilPlayableCard { get; init; }
@@ -20,18 +20,18 @@ public class GameSystemFactory
 
     static GameSystemFactory()
     {
-        _allCardsDict = new(NUMBER_CARDS);
-        _allCards = new(NUMBER_CARDS);
+        AllCardsDict = new(NumberCards);
+        AllCards = new(NumberCards);
         foreach (CardColors color in Enum.GetValuesAsUnderlyingType<CardColors>())
         {
             foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
             {
                 ICard card = new ColorCard(color, symbol);
-                _allCardsDict.Add(card.ToString(), card);
-                int i = symbol == ColorCardSymbols.Zero ? NUMBER_OF_ZEROS : NUMBER_OF_EACH_COLOR_CARD;
+                AllCardsDict.Add(card.ToString(), card);
+                int i = symbol == ColorCardSymbols.Zero ? NumberOfZeros : NumberOfEachColorCard;
                 for (; i > 0; i--)
                 {
-                    _allCards.Add(card);
+                    AllCards.Add(card);
                 }
             }
         }
@@ -39,10 +39,10 @@ public class GameSystemFactory
         {
             // CardColors.RED is simply used as a placeholder
             ICard card = new WildCard(CardColors.Red, symbol);
-            _allCardsDict.Add(card.ToString(), card);
-            for (int i = 0; i < NUMBER_OF_EACH_WILD_CARD; i++)
+            AllCardsDict.Add(card.ToString(), card);
+            for (int i = 0; i < NumberOfEachWildCard; i++)
             {
-                _allCards.Add(card);
+                AllCards.Add(card);
             }
         }
     }
@@ -52,16 +52,16 @@ public class GameSystemFactory
         _nPlayers = nPlayers;
     }
 
-    public GameSystem Build()
+    public IGameSystem Build()
     {
         IDrawStyle drawStyle;
         if (DrawUntilPlayableCard)
         {
-            drawStyle = new DrawUntilFound(_allCards, NUMBER_CARDS);
+            drawStyle = new DrawUntilFound(AllCards, NumberCards);
         }
         else
         {
-            drawStyle = new DrawSingle(_allCards, NUMBER_CARDS);
+            drawStyle = new DrawSingle(AllCards, NumberCards);
         }
 
         IStackStyle stackStyle;
@@ -74,6 +74,6 @@ public class GameSystemFactory
             stackStyle = new NoStack(drawStyle);
         }
 
-        return new GameSystem(_nPlayers, _allCardsDict, drawStyle, MustPlay, stackStyle);
+        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle);
     }
 }

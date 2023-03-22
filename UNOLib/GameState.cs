@@ -12,7 +12,7 @@ public struct GameState
     // Note: CardsDrawn is set to a number when a wild plus 4 is played however nobody is set to have drawn those cards
     // since the system will be waiting for the color to change the wild
     public int CardsDrawn { get; internal set; }
-    public CardColors? ColorChanged { get => colorChanged; internal set => colorChanged = value; }
+    public CardColors? ColorChanged { get => _colorChanged; internal set => _colorChanged = value; }
     public bool NewTurn { get; internal set; }
     internal bool ClockwiseOrder { get; set; }
     public bool WaitingOnColorChange { get; internal set; }
@@ -24,7 +24,7 @@ public struct GameState
     public bool StackPlusFour { get; internal set; }
     
 
-    private CardColors? colorChanged;
+    private CardColors? _colorChanged;
 
     internal GameState(ICard onTable, IPlayer currentPlayer, int nPlayers)
     {
@@ -48,7 +48,7 @@ public struct GameState
         if (WhoDrewCards != null)
             CardsDrawn = 0;
         WhoDrewCards = null;
-        colorChanged = null;
+        _colorChanged = null;
         WaitingOnColorChange = false;
         PlayersSkipped.Clear();
         CardsPlayed.Clear();

@@ -5,9 +5,9 @@ using UNOLib.StackStyles;
 
 namespace UNOLib;
 
-public class GameSystem : IEnumerable<IPlayer>
+public class GameSystem : IGameSystem
 {
-    private const int CARDS_PER_PLAYER = 7;
+    private const int CardsPerPlayer = 7;
 
     private readonly Dictionary<string, ICard> _allCardsDict;
     private readonly List<IPlayer> _playersByOrder;
@@ -16,7 +16,7 @@ public class GameSystem : IEnumerable<IPlayer>
     private readonly bool _mustPlay;
     private GameState _state;
 
-    public GameState State { get => _state; }
+    public GameState State => _state;
 
     internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay, IStackStyle stackStyle)
     {
@@ -27,7 +27,7 @@ public class GameSystem : IEnumerable<IPlayer>
         {
             IPlayer player = new Player(i);
             _playersByOrder.Add(player);
-            for (int j = 0; j < CARDS_PER_PLAYER; j++)
+            for (int j = 0; j < CardsPerPlayer; j++)
             {
                 player.AddCard(_drawStyle.Draw());
             }
@@ -149,7 +149,7 @@ public class GameSystem : IEnumerable<IPlayer>
         {
             throw new GameIsFinishedException();
         }
-        else if (!_state.WaitingOnColorChange)
+        if (!_state.WaitingOnColorChange)
         {
             throw new CannotChangeColorException();
         }
@@ -157,7 +157,8 @@ public class GameSystem : IEnumerable<IPlayer>
         {
             throw new NotPlayersTurnException();
         }
-        else if (_state.OnTable is WildCard wildCard)
+
+        if (_state.OnTable is WildCard wildCard)
         {
             wildCard.Color = Enum.Parse<CardColors>(color);
             _state.ColorChanged = wildCard.Color;

@@ -9,7 +9,7 @@ public class CardAutocompleteProvider : IAutocompleteProvider
 {
     public async Task<IEnumerable<DiscordAutoCompleteChoice>> Provider(AutocompleteContext ctx)
     {
-        var ulw = ctx.Services.GetService<UNOLibWrapper>();
+        var ulw = ctx.Services.GetService<UnoLibWrapper>();
         try
         {
             IPlayer player = ulw.CheckCards(ctx.Guild.Id, ctx.User);

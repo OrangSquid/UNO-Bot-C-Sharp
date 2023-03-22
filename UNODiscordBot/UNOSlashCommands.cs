@@ -6,10 +6,10 @@ using UNOLib.Exceptions;
 
 namespace UNODiscordBot;
 
-public class UNOSlashCommands : ApplicationCommandModule
+public class UnoSlashCommands : ApplicationCommandModule
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public UNOLibWrapper Uno { private get; set; }
+    public UnoLibWrapper Uno { private get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     [SlashCommand("new", "Make a new game for people to join")]

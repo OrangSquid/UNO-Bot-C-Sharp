@@ -11,11 +11,8 @@ internal class Player : IPlayer
     private int _numWildPlusFourCards;
 
     public int Id { get; }
-
     public bool HasPlusTwoCards => _numPlusTwoCards > 0;
-
     public bool HasWildPlusFourCards => _numWildPlusFourCards > 0;
-
     public int NumCards { get; private set; }
 
     public Player(int id)
@@ -37,11 +34,11 @@ internal class Player : IPlayer
         }
         cardsSameValue.Push(card);
         // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
-        if (card is ColorCard cCard && cCard.Symbol == ColorCardSymbols.PlusTwo)
+        if (card is ColorCard { Symbol: ColorCardSymbols.PlusTwo })
         {
             _numPlusTwoCards++;
         }
-        else if (card is WildCard wCard && wCard.Symbol == WildCardSymbols.PlusFour)
+        else if (card is WildCard { Symbol: WildCardSymbols.PlusFour })
         {
             _numWildPlusFourCards++;
         }
@@ -62,11 +59,11 @@ internal class Player : IPlayer
             _deck.Remove(cardId);
         }
         // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
-        if (card is ColorCard cCard && cCard.Symbol == ColorCardSymbols.PlusTwo)
+        if (card is ColorCard { Symbol: ColorCardSymbols.PlusTwo })
         {
             _numPlusTwoCards--;
         }
-        else if (card is WildCard wCard && wCard.Symbol == WildCardSymbols.PlusFour)
+        else if (card is WildCard { Symbol: WildCardSymbols.PlusFour })
         {
             _numWildPlusFourCards--;
         }

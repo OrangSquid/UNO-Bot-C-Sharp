@@ -1,4 +1,4 @@
-﻿namespace UNOLib;
+﻿namespace UNOLib.DrawStyle;
 
 /// <summary>
 /// Draw a single card

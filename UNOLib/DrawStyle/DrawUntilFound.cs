@@ -1,4 +1,4 @@
-﻿namespace UNOLib;
+﻿namespace UNOLib.DrawStyle;
 
 /// <summary>
 /// Draws cards until a playable one is found

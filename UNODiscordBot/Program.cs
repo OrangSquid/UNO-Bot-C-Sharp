@@ -8,7 +8,13 @@ public class Program
 {
     public static async Task Main()
     {
-        string token = File.ReadAllText("Token.txt");
+        Console.WriteLine("Main/Dev");
+        string choice = Console.ReadLine();
+        string token;
+        if (choice == "m")
+            token = File.ReadAllText("MToken.txt");
+        else
+            token = File.ReadAllText("DToken.txt");
 
         DiscordClient discord = new(new DiscordConfiguration()
         {

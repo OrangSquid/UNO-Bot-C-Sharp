@@ -1,4 +1,4 @@
-﻿namespace UNOLib;
+﻿namespace UNOLib.DrawStyle;
 
 /// <summary>
 /// Interface for the various draw styles. Handles the card stack and drawing methods

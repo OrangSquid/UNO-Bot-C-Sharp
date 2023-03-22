@@ -64,7 +64,6 @@ public class UNOSlashCommands : ApplicationCommandModule
         }
     }
 
-    //TODO
     [SlashCommand("play", "Plays a given card")]
     public async Task PlayCardCommand(InteractionContext ctx,
         [Option("card", "The card to play", true)]
@@ -93,7 +92,6 @@ public class UNOSlashCommands : ApplicationCommandModule
         }
     }
 
-    //TODO
     [SlashCommand("choose", "Choose the color after playing a Wild Card")]
     public async Task ChooseColorCommand(InteractionContext ctx,
         [Option("color", "The color to change the wild card you played")]
@@ -121,7 +119,6 @@ public class UNOSlashCommands : ApplicationCommandModule
         }
     }
 
-    //TODO
     [SlashCommand("draw", "Draws a card by the chosen rule set")]
     public async Task DrawCardCommand(InteractionContext ctx)
     {
@@ -196,10 +193,10 @@ public class UNOSlashCommands : ApplicationCommandModule
                 message += $"Player {Uno.GetUser(ctx.Guild.Id, state.WhoDrewCards.Id).Username} drew {state.CardsDrawn} cards\n";
             }
             // Players were skipped
-            if (state.PlayersSkiped.Count != 0)
+            if (state.PlayersSkipped.Count != 0)
             {
                 message += "These Players were skipped: \n";
-                foreach (IPlayer player in state.PlayersSkiped)
+                foreach (IPlayer player in state.PlayersSkipped)
                 {
                     message += $"Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
                 }

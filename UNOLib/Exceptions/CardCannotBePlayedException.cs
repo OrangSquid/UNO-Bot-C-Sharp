@@ -1,6 +1,5 @@
-﻿namespace UNOLib.Exceptions
+﻿namespace UNOLib.Exceptions;
+
+public class CardCannotBePlayedException : Exception
 {
-    public class CardCannotBePlayedException : Exception
-    {
-    }
 }

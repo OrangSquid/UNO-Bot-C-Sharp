@@ -1,4 +1,4 @@
 ﻿namespace UNOLib.Exceptions;
-    public class GameIsFinishedException : Exception
-    {
-    }
+public class GameIsFinishedException : Exception
+{
+}

@@ -14,13 +14,12 @@ internal interface IGameSystem
     /// <exception cref="CardCannotBePlayedException">Card does not meet the requirements to be played or does not exist at all.</exception>
     public void CardPlay(int playerId, string cardId);
 
-
     /// <summary>
     /// Gets the player with the specified Id
     /// </summary>
-    /// <param name="id">Id of the Player</param>
+    /// <param name="playerId">Id of the Player</param>
     /// <returns></returns>
-    public IPlayer GetPlayer(int id);
+    public IPlayer GetPlayer(int playerId);
 
     /// <summary>
     /// Should be caled when the current player wants or needs to draw cards

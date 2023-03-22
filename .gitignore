@@ -361,4 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/UNODiscordBot/Token.txt
+/UNODiscordBot/MToken.txt
+/UNODiscordBot/DToken.txt

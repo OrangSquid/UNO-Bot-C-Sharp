@@ -7,7 +7,7 @@ public struct GameState
     public IPlayer CurrentPlayer { get; internal set; }
     public IPlayer? PreviousPlayer { get; internal set; }
     public bool JustReversedOrder { get; internal set; }
-    public List<IPlayer> PlayersSkiped { get; internal set; }
+    public List<IPlayer> PlayersSkipped { get; internal set; }
     public IPlayer? WhoDrewCards { get; internal set; }
     // Note: CardsDrawn is set to a number when a wild plus 4 is played however nobody is set to have drawn those cards
     // since the system will be waiting for the color to change the wild
@@ -27,7 +27,7 @@ public struct GameState
         CurrentPlayer = currentPlayer;
         ClockwiseOrder = true;
         WaitingOnColorChange = false;
-        PlayersSkiped = new(nPlayers);
+        PlayersSkipped = new(nPlayers);
         CardsPlayed = new();
         Refresh();
         NewTurn = true;
@@ -44,7 +44,7 @@ public struct GameState
         CardsDrawn = 0;
         colorChanged = null;
         WaitingOnColorChange = false;
-        PlayersSkiped.Clear();
+        PlayersSkipped.Clear();
         CardsPlayed.Clear();
         NewTurn = false;
     }

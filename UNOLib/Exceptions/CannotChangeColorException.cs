@@ -1,6 +1,5 @@
-﻿namespace UNOLib.Exceptions
+﻿namespace UNOLib.Exceptions;
+
+public class CannotChangeColorException : Exception
 {
-    public class CannotChangeColorException : Exception
-    {
-    }
 }

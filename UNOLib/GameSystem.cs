@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using UNOLib.DrawStyle;
 using UNOLib.Exceptions;
 
 namespace UNOLib;
@@ -74,20 +75,11 @@ public class GameSystem : IEnumerable<IPlayer>
         }
     }
 
-    /// <summary>
-    /// Gets the player with the specified Id
-    /// </summary>
-    /// <param name="id">Id of the Player</param>
-    /// <returns></returns>
     public IPlayer GetPlayer(int id)
     {
         return _playersByOrder[id];
     }
 
-    /// <summary>
-    /// Should be caled when the current player wants or needs to draw cards
-    /// </summary>
-    /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
     public void DrawCard(int playerId)
     {
         if (_state.GameFinished)
@@ -104,14 +96,6 @@ public class GameSystem : IEnumerable<IPlayer>
             SetNextPlayer();
     }
 
-    /// <summary>
-    /// Changes the color when a Wild Card is played to the specified by the current Player.
-    /// If a Four Plus Wild Card is played it also makes the next player draw 4 cards and skips it.
-    /// </summary>
-    /// <param name="color">color that was chosen</param>
-    /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
-    /// <exception cref="CannotChangeColorException">Cannot change the color because there was no Wild Card played.</exception>
-    /// <exception cref="ArgumentException">color is invalid.</exception>
     public void ChangeOnTableColor(int playerId, string color)
     {
         if (_state.GameFinished)
@@ -223,7 +207,7 @@ public class GameSystem : IEnumerable<IPlayer>
     private void SkipPlayer()
     {
         SelectNextPlayer();
-        _state.PlayersSkiped.Add(_state.CurrentPlayer);
+        _state.PlayersSkipped.Add(_state.CurrentPlayer);
     }
 
     public IEnumerator<IPlayer> GetEnumerator()

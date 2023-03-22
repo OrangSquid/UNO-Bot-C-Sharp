@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using UNOLib;
+﻿using UNOLib;
 using UNOLib.Exceptions;
 
 namespace UNOConsole;
@@ -39,6 +38,9 @@ public static class Program
             case "changeColor":
                 ChangeColor();
                 break;
+            case "skip":
+                Skip();
+                break;
             default:
                 Console.WriteLine("No such command");
                 break;
@@ -47,40 +49,33 @@ public static class Program
 
     private static void NewGame()
     {
-        Console.WriteLine("playSameSymbol");
-        bool playSameSymbol = Convert.ToBoolean(Console.ReadLine());
+        //Console.WriteLine("playSameSymbol");
+        //bool playSameSymbol = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("stackPlusTwo");
         bool stackPlusTwo = Convert.ToBoolean(Console.ReadLine());
-        Console.WriteLine("stackWildPlusFour");
-        bool stackWildPlusFour = Convert.ToBoolean(Console.ReadLine());
+        //Console.WriteLine("stackWildPlusFour");
+        //bool stackWildPlusFour = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("mustPlay");
         bool mustPlay = Convert.ToBoolean(Console.ReadLine());
-        Console.WriteLine("jumpIn");
-        bool jumpIn = Convert.ToBoolean(Console.ReadLine());
+        //Console.WriteLine("jumpIn");
+        //bool jumpIn = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("drawUntilPlayableCard");
         bool drawUntilPlayableCard = Convert.ToBoolean(Console.ReadLine());
-        Console.WriteLine("numZeroPlayed");
-        bool numZeroPlayed = Convert.ToBoolean(Console.ReadLine());
-        Console.WriteLine("numSevenPlayed");
-        bool numSevenPlayed = Convert.ToBoolean(Console.ReadLine());
-        Console.WriteLine("noUNOPenalty");
-        int noUNOPenalty = Convert.ToInt32(Console.ReadLine());
-
-        Settings settings = new(playSameSymbol,
-                                stackPlusTwo,
-                                stackWildPlusFour,
-                                mustPlay,
-                                jumpIn,
-                                drawUntilPlayableCard,
-                                numZeroPlayed,
-                                numSevenPlayed,
-                                noUNOPenalty);
+        //Console.WriteLine("numZeroPlayed");
+        //bool numZeroPlayed = Convert.ToBoolean(Console.ReadLine());
+        //Console.WriteLine("numSevenPlayed");
+        //bool numSevenPlayed = Convert.ToBoolean(Console.ReadLine());
+        //Console.WriteLine("noUNOPenalty");
+        //int noUNOPenalty = Convert.ToInt32(Console.ReadLine());
 
         Console.WriteLine("numPlayers");
         int nPlayers = Convert.ToInt32(Console.ReadLine());
         GameSystemFactory gsf = new(nPlayers)
         {
-            DrawUntilPlayableCard = drawUntilPlayableCard
+            DrawUntilPlayableCard = drawUntilPlayableCard,
+            StackPlusTwo = stackPlusTwo,
+            MustPlay = mustPlay,
+            
         };
         uno = gsf.Build();
 
@@ -196,6 +191,32 @@ public static class Program
         Console.WriteLine(uno.State.OnTable);
     }
 
+    private static void Skip()
+    {
+        if (uno is null)
+        {
+            return;
+        }
+        try
+        {
+            int playerId = Convert.ToInt32(Console.ReadLine());
+            uno.Skip(playerId);
+            StateInterpreter(false);
+        }
+        catch (GameIsFinishedException)
+        {
+            Console.WriteLine("Games has finished");
+        }
+        catch (NotPlayersTurnException)
+        {
+            Console.WriteLine("Not player's turn");
+        }
+        catch (PlayerCannotSkipException)
+        {
+            Console.WriteLine("You cannot skip");
+        }
+    }
+
     private static void StateInterpreter(bool newGame)
     {
         if (uno is null)
@@ -228,10 +249,10 @@ public static class Program
                 Console.WriteLine("Player {0} drew {1} cards", uno.State.WhoDrewCards.Id, uno.State.CardsDrawn);
             }
             // Players were skipped
-            if (uno.State.PlayersSkiped.Count != 0)
+            if (uno.State.PlayersSkipped.Count != 0)
             {
                 Console.WriteLine("These Players were skipped: ");
-                foreach (IPlayer player in uno.State.PlayersSkiped)
+                foreach (IPlayer player in uno.State.PlayersSkipped)
                 {
                     Console.WriteLine("Player {0}", player.Id);
                 }
@@ -249,6 +270,10 @@ public static class Program
             if(uno.State.ColorChanged != null)
             {
                 Console.WriteLine("Color changed to: {0}", uno.State.ColorChanged);
+            }
+            if(uno.State.HasSkiped)
+            {
+                Console.WriteLine("Player {0} has skipped their turn", uno.State.PreviousPlayer);
             }
             if(uno.State.GameFinished)
             {

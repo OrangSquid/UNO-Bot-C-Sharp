@@ -1,4 +1,5 @@
 ﻿using DSharpPlus.SlashCommands;
+using System.Numerics;
 using UNODiscordBot.Exceptions;
 using UNOLib;
 using UNOLib.Exceptions;
@@ -138,6 +139,10 @@ public class UNOSlashCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync("It's not your turn", true);
         }
+        catch (PlayerCannotDrawException)
+        {
+            await ctx.CreateResponseAsync("You cannot draw anymore", true);
+        }
     }
 
     [SlashCommand("check", "Shows your current deck")]
@@ -162,6 +167,31 @@ public class UNOSlashCommands : ApplicationCommandModule
         catch (PlayerDoesNotExistException)
         {
             await ctx.CreateResponseAsync("You're not part of the game", true);
+        }
+    }
+
+    [SlashCommand("skip", "Skips your turn after drawing a card")]
+    public async Task SkipCommand(InteractionContext ctx)
+    {
+        try
+        {
+            await StateInterpreter(false, Uno.Skip(ctx.Guild.Id, ctx.User), ctx);
+        }
+        catch (GameDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+        }
+        catch (GameIsFinishedException)
+        {
+            await ctx.CreateResponseAsync("Game has already finished", true);
+        }
+        catch (NotPlayersTurnException)
+        {
+            await ctx.CreateResponseAsync("It's not your turn", true);
+        }
+        catch (PlayerCannotSkipException)
+        {
+            await ctx.CreateResponseAsync("You cannot skip", true);
         }
     }
 
@@ -214,6 +244,10 @@ public class UNOSlashCommands : ApplicationCommandModule
             if (state.ColorChanged != null)
             {
                 message += $"Color changed to: {state.ColorChanged}\n";
+            }
+            if (state.HasSkiped && state.PreviousPlayer != null)
+            {
+                message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} has skipped their turn\n";
             }
             if (state.GameFinished)
             {

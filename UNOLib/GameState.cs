@@ -17,6 +17,11 @@ public struct GameState
     internal bool ClockwiseOrder { get; set; }
     public bool WaitingOnColorChange { get; internal set; }
     public bool GameFinished { get; internal set; }
+    internal bool CanSkip { get; set; }
+    internal bool HasDrawnCards { get; set; }
+    public bool HasSkiped { get; internal set; }
+    public bool StackPlusTwo { get; internal set; }
+    public bool StackPlusFour { get; internal set; }
     
 
     private CardColors? colorChanged;
@@ -40,13 +45,19 @@ public struct GameState
     internal void Refresh()
     {
         JustReversedOrder = false;
+        if (WhoDrewCards != null)
+            CardsDrawn = 0;
         WhoDrewCards = null;
-        CardsDrawn = 0;
         colorChanged = null;
         WaitingOnColorChange = false;
         PlayersSkipped.Clear();
         CardsPlayed.Clear();
         NewTurn = false;
+        CanSkip = false;
+        HasDrawnCards = false;
+        HasSkiped = false;
+        StackPlusFour = false;
+        StackPlusTwo = false;
     }
 
     /// <summary>

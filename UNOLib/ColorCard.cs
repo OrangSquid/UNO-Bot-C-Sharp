@@ -21,6 +21,13 @@ internal class ColorCard : ICard
 
     public override string ToString()
     {
-        return string.Concat(Color.ToString(), Symbol.ToString());
+        string message = Color.ToString() + " ";
+
+        if (Symbol.Equals(ColorCardSymbols.Reverse) || Symbol.Equals(ColorCardSymbols.PlusTwo) || Symbol.Equals(ColorCardSymbols.Skip))
+            message += Symbol.ToString();
+        else
+            message += Enum.Format(typeof(ColorCardSymbols), Symbol, "d");
+
+        return message;
     }
 }

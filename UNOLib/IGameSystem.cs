@@ -1,5 +1,4 @@
-﻿using System.Runtime;
-using UNOLib.Exceptions;
+﻿using UNOLib.Exceptions;
 
 namespace UNOLib;
 
@@ -36,4 +35,10 @@ internal interface IGameSystem
     /// <exception cref="CannotChangeColorException">Cannot change the color because there was no Wild Card played.</exception>
     /// <exception cref="ArgumentException">color is invalid.</exception>
     public void ChangeOnTableColor(int playerId, string color);
+
+    /// <summary>
+    /// Lets the player skip their turn after drawing a card
+    /// </summary>
+    /// <param name="playerId"></param>
+    public void Skip(int playerId);
 }

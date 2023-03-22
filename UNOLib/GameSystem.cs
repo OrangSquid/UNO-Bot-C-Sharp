@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UNOLib.DrawStyle;
 using UNOLib.Exceptions;
+using UNOLib.StackStyles;
 
 namespace UNOLib;
 
@@ -11,16 +12,13 @@ public class GameSystem : IEnumerable<IPlayer>
     private readonly Dictionary<string, ICard> _allCardsDict;
     private readonly List<IPlayer> _playersByOrder;
     private readonly IDrawStyle _drawStyle;
+    private readonly IStackStyle _stackStyle;
+    private readonly bool _mustPlay;
     private GameState _state;
 
     public GameState State { get => _state; }
 
-    /// <summary>
-    /// Game System constructor. Received the number of players and the chosen settings.
-    /// </summary>
-    /// <param name="nPlayers">Number of Players in the game</param>
-    /// <param name="settings">Settings object containing the chosen settings</param>
-    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle)
+    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay, IStackStyle stackStyle)
     {
         _playersByOrder = new(nPlayers);
         _allCardsDict = allCardsDict;
@@ -35,15 +33,10 @@ public class GameSystem : IEnumerable<IPlayer>
             }
         }
         _state = new GameState(_drawStyle.Draw(), _playersByOrder.First(), _playersByOrder.Count);
+        _mustPlay = mustPlay;
+        _stackStyle = stackStyle;
     }
 
-    /// <summary>
-    /// Plays the card and checks if the players has finished their deck. 
-    /// CardAction is called afterwards to do the action specified for that card.
-    /// </summary>
-    /// <param name="cardId">Id of the card to be played</param>
-    /// <exception cref="GameIsFinishedException">Game is already over. Cannot do more actions.</exception>
-    /// <exception cref="CardCannotBePlayedException">Card does not meet the requirements to be played or does not exist at all.</exception>
     public void CardPlay(int playerId, string cardId)
     {
         if (_state.GameFinished)
@@ -51,7 +44,15 @@ public class GameSystem : IEnumerable<IPlayer>
             throw new GameIsFinishedException();
         }
         // Check if card is present in the dictionary for all cards and if card can be played on top of current one
-        if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed) || !_state.OnTable.CanBePlayed(cardToBePlayed))
+        if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed))
+        {
+            throw new CardCannotBePlayedException();
+        }
+        if (_state.StackPlusTwo && cardToBePlayed is ColorCard colorCard && colorCard.Symbol != ColorCardSymbols.PlusTwo)
+        {
+            throw new CardCannotBePlayedException();
+        }
+        if (!_state.OnTable.CanBePlayed(cardToBePlayed))
         {
             throw new CardCannotBePlayedException();
         }
@@ -90,10 +91,56 @@ public class GameSystem : IEnumerable<IPlayer>
         {
             throw new NotPlayersTurnException();
         }
+        if (_state.HasDrawnCards)
+        {
+            throw new PlayerCannotDrawException();
+        }
         _state.Refresh();
         _state.PreviousPlayer = _state.CurrentPlayer;
-        if (!_drawStyle.GameDraw(ref _state))
+        // TODO really should refactor this
+        if (_state.CardsDrawn != 0 && DrawMany(_state.CurrentPlayer) || !_drawStyle.GameDraw(ref _state))
+        {
             SetNextPlayer();
+        }
+        else
+        {
+            _state.HasDrawnCards = true;
+            if (!_mustPlay)
+            {
+                _state.CanSkip = true;
+            }
+        }
+    }
+
+    // TODO really should refactor this
+    private bool DrawMany(IPlayer player)
+    {
+        for (int i = 0; i < _state.CardsDrawn; i++)
+        {
+            player.AddCard(_drawStyle.Draw());
+        }
+        _state.WhoDrewCards = _state.CurrentPlayer;
+        return true;
+    }
+
+    public void Skip(int playerId)
+    {
+        if (_state.GameFinished)
+        {
+            throw new GameIsFinishedException();
+        }
+        if (playerId != _state.CurrentPlayer.Id)
+        {
+            throw new NotPlayersTurnException();
+        }
+        if (!_state.CanSkip)
+        {
+            throw new PlayerCannotSkipException();
+        }
+        _state.Refresh();
+        _state.PreviousPlayer = _state.CurrentPlayer;
+        _state.HasSkiped = true;
+        SetNextPlayer();
     }
 
     public void ChangeOnTableColor(int playerId, string color)
@@ -115,11 +162,20 @@ public class GameSystem : IEnumerable<IPlayer>
             wildCard.Color = Enum.Parse<CardColors>(color);
             _state.ColorChanged = wildCard.Color;
             _state.WaitingOnColorChange = false;
-            if (_state.CardsDrawn != 0)
+            if (wildCard.Symbol == WildCardSymbols.PlusFour)
             {
-                DrawAndSkip(_state.CardsDrawn);
+                SetNextPlayer();
+                if (_stackStyle.ForcedDraw(ref _state, wildCard))
+                {
+                    _state.PlayersSkipped.Add(_state.CurrentPlayer);
+                    SetNextPlayer();
+                }
             }
-            SetNextPlayer();
+            else
+            {
+                SetNextPlayer();
+            }
+
         }
     }
 
@@ -129,20 +185,9 @@ public class GameSystem : IEnumerable<IPlayer>
     /// <param name="card">Card that was played</param>
     private void CardAction(ICard card)
     {
-        if (card is WildCard wildCard)
+        if (card is WildCard)
         {
-            switch (wildCard.Symbol)
-            {
-                case WildCardSymbols.Simple: //Changes the color on the table
-                    _state.WaitingOnColorChange = true;
-                    break;
-                case WildCardSymbols.PlusFour: //Changes the color on the table and the next player has to draw 4 cards
-                    _state.WaitingOnColorChange = true;
-                    _state.CardsDrawn = 4;
-                    break;
-                default:
-                    break;
-            }
+            _state.WaitingOnColorChange = true;
         }
         else if (card is ColorCard colorCard)
         {
@@ -157,9 +202,15 @@ public class GameSystem : IEnumerable<IPlayer>
                         SelectNextPlayer();
                     break;
                 case ColorCardSymbols.PlusTwo: //Next player has to draw 2 cards
-                    // TODO make it stack
-                    DrawAndSkip(2);
-                    break;
+                    // Sets up the next player for the forced draw
+                    SetNextPlayer();
+                    if (_stackStyle.ForcedDraw(ref _state, colorCard))
+                    {
+                        _state.PlayersSkipped.Add(_state.CurrentPlayer);
+                        SetNextPlayer();
+                    }
+                    // TODO find better solution
+                    return;
                 default:
                     break;
             }
@@ -177,19 +228,6 @@ public class GameSystem : IEnumerable<IPlayer>
             _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + 1) % _playersByOrder.Count];
         else
             _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + _playersByOrder.Count - 1) % _playersByOrder.Count];
-    }
-
-    /// <summary>
-    /// Should be called when the next player is forced to draw cards
-    /// </summary>
-    /// <param name="cardsToDraw">The number of cards that must be drawn</param>
-    private void DrawAndSkip(int cardsToDraw)
-    {
-        SkipPlayer();
-        for (int i = 0; i < cardsToDraw; i++)
-            _state.CurrentPlayer.AddCard(_drawStyle.Draw());
-        _state.CardsDrawn = cardsToDraw;
-        _state.WhoDrewCards = _state.CurrentPlayer;
     }
 
     /// <summary>

@@ -24,6 +24,6 @@ internal class WildCard : ICard
 
     public override string ToString()
     {
-        return string.Concat(ACTUAL_COLOR, Symbol.ToString());
+        return ACTUAL_COLOR + " " + Symbol.ToString();
     }
 }

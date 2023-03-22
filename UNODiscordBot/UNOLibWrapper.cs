@@ -54,7 +54,9 @@ public class UNOLibWrapper
         int nPlayers = lobby.Count;
         GameSystemFactory gsf = new(nPlayers)
         {
-            DrawUntilPlayableCard = false
+            DrawUntilPlayableCard = true,
+            StackPlusTwo = true,
+            MustPlay = false
         };
         GameSystem gs = gsf.Build();
         _guild_games.Add(guildId, new GameStruct()
@@ -112,6 +114,16 @@ public class UNOLibWrapper
             throw new GameDoesNotExistException();
         }
         return game.Players[playerId];
+    }
+
+    public GameState Skip(ulong guildId, DiscordUser player) 
+    {
+        if (!_guild_games.TryGetValue(guildId, out GameStruct game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        game.Gs.Skip(GetPlayerId(game, player));
+        return game.Gs.State;
     }
 
     private static int GetPlayerId(GameStruct game, DiscordUser player)

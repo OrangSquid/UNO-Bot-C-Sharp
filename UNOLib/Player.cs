@@ -24,7 +24,7 @@ internal class Player : IPlayer
         NumCards = 0;
         _numPlusTwoCards = 0;
         _numWildPlusFourCards = 0;
-        _deck = new();
+        _deck = new(new CardComparer());
     }
 
     public void AddCard(ICard card)

@@ -1,4 +1,7 @@
-﻿namespace UNOLib;
+﻿using UNOLib.DrawStyle;
+using UNOLib.StackStyles;
+
+namespace UNOLib;
 
 public class GameSystemFactory
 {
@@ -12,6 +15,8 @@ public class GameSystemFactory
     private readonly int _nPlayers;
 
     public bool DrawUntilPlayableCard { get; init; }
+    public bool StackPlusTwo { get; init; }
+    public bool MustPlay { get; init; }
 
     static GameSystemFactory()
     {
@@ -59,6 +64,16 @@ public class GameSystemFactory
             drawStyle = new DrawSingle(_allCards, NUMBER_CARDS);
         }
 
-        return new GameSystem(_nPlayers, _allCardsDict, drawStyle);
+        IStackStyle stackStyle;
+        if (StackPlusTwo)
+        {
+            stackStyle = new StackPlusTwo(drawStyle);
+        }
+        else
+        {
+            stackStyle = new NoStack(drawStyle);
+        }
+
+        return new GameSystem(_nPlayers, _allCardsDict, drawStyle, MustPlay, stackStyle);
     }
 }

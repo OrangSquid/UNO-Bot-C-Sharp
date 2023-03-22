@@ -32,7 +32,15 @@ public class GameSystem : IGameSystem
                 player.AddCard(_drawStyle.Draw());
             }
         }
-        _state = new GameState(_drawStyle.Draw(), _playersByOrder.First(), _playersByOrder.Count);
+
+        ICard startingCard = _drawStyle.Draw();
+        while(startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip and ColorCardSymbols.PlusTwo and ColorCardSymbols.Reverse } )
+        {
+            _drawStyle.Push(startingCard);
+            startingCard = _drawStyle.Draw();
+        }
+        
+        _state = new GameState(startingCard, _playersByOrder.First(), _playersByOrder.Count);
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;
     }
@@ -239,7 +247,7 @@ public class GameSystem : IGameSystem
     }
 
     /// <summary>
-    /// Skips the next player when a Skip Card
+    /// Skips the next player when a Skip Card is played
     /// </summary>
     private void SkipPlayer()
     {

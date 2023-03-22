@@ -22,7 +22,7 @@ public struct GameState
     public bool HasSkiped { get; internal set; }
     public bool StackPlusTwo { get; internal set; }
     public bool StackPlusFour { get; internal set; }
-    
+
 
     private CardColors? _colorChanged;
 

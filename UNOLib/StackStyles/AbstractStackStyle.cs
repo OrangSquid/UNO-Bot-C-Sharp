@@ -4,9 +4,9 @@ namespace UNOLib.StackStyles;
 
 internal abstract class AbstractStackStyle : IStackStyle
 {
-    private const int PLUS_TWO = 2;
-    private const int PLUS_FOUR = 4;
-    private IDrawStyle _drawStyle;
+    private const int PlusTwo = 2;
+    private const int PlusFour = 4;
+    private readonly IDrawStyle _drawStyle;
 
     protected AbstractStackStyle(IDrawStyle drawStyle)
     {
@@ -35,20 +35,10 @@ internal abstract class AbstractStackStyle : IStackStyle
     {
         if (card is WildCard wildCard)
         {
-            switch (wildCard.Symbol)
-            {
-                case WildCardSymbols.PlusFour:
-                    return PLUS_FOUR;
-            }
+            if (wildCard.Symbol == WildCardSymbols.PlusFour) return PlusFour;
         }
-        else if (card is ColorCard colorCard)
-        {
-            switch (colorCard.Symbol)
-            {
-                case ColorCardSymbols.PlusTwo:
-                    return PLUS_TWO;
-            }
-        }
+        else if (card is ColorCard { Symbol: ColorCardSymbols.PlusTwo }) return PlusTwo;
+
         return 0;
     }
 

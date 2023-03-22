@@ -9,7 +9,7 @@ internal class WildCard : ICard
     public CardColors Color { get; set; }
 
     internal WildCardSymbols Symbol { get; init; }
-    private const string ACTUAL_COLOR = "Wild";
+    private const string ActualColor = "Wild";
 
     public WildCard(CardColors color, WildCardSymbols symbol)
     {
@@ -24,6 +24,6 @@ internal class WildCard : ICard
 
     public override string ToString()
     {
-        return ACTUAL_COLOR + " " + Symbol.ToString();
+        return ActualColor + " " + Symbol.ToString();
     }
 }

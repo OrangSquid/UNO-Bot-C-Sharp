@@ -5,7 +5,7 @@
 /// </summary>
 internal class DrawUntilFound : AbstractDrawStyle
 {
-    public DrawUntilFound(List<ICard> fullDeck, int number_total_cards) : base(fullDeck, number_total_cards) { }
+    public DrawUntilFound(List<ICard> fullDeck, int numberTotalCards) : base(fullDeck, numberTotalCards) { }
 
     public override bool GameDraw(ref GameState state)
     {

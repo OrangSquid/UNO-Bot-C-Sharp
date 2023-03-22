@@ -18,7 +18,7 @@ public class PlayerDeckEnumerator : IEnumerator<ICard>
     {
         // TODO Possible null dereference
         _dictionaryEnumerator = enumerator;
-        _ = enumerator.MoveNext();
+        enumerator.MoveNext();
         _stackEnumerator = enumerator.Current.Value.GetEnumerator();
     }
 

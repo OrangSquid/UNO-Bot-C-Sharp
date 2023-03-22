@@ -23,7 +23,7 @@ public readonly struct Settings
                     bool drawUntilPlayableCard,
                     bool numZeroPlayed,
                     bool numSevenPlayed,
-                    int noUNOPenalty)
+                    int noUnoPenalty)
     {
         DrawUntilPlayableCard = drawUntilPlayableCard;
     }

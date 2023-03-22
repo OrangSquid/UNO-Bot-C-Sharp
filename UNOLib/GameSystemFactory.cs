@@ -17,6 +17,7 @@ public class GameSystemFactory
     public required bool DrawUntilPlayableCard { get; init; }
     public required bool StackPlusTwo { get; init; }
     public required bool MustPlay { get; init; }
+    public required bool JumpIn { get; init; }
 
     static GameSystemFactory()
     {
@@ -74,6 +75,6 @@ public class GameSystemFactory
             stackStyle = new NoStack(drawStyle);
         }
 
-        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle);
+        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle, JumpIn);
     }
 }

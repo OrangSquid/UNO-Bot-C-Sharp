@@ -56,7 +56,8 @@ public class UnoLibWrapper
         {
             DrawUntilPlayableCard = false,
             StackPlusTwo = true,
-            MustPlay = false
+            MustPlay = false,
+            JumpIn = true
         };
         IGameSystem gs = gsf.Build();
         _guildGames.Add(guildId, new GameStruct()

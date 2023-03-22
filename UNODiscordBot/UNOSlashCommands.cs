@@ -206,6 +206,11 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         else
         {
+            // Player JumpedIn
+            if (state is { JumpedIn: true, PreviousPlayer: { } })
+            {
+                message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} jumped in!";
+            }
             // Played a card
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
@@ -245,7 +250,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             {
                 message += $"Color changed to: {state.ColorChanged}\n";
             }
-            if (state.HasSkiped && state.PreviousPlayer != null)
+            if (state is { HasSkipped: true, PreviousPlayer: { } })
             {
                 message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} has skipped their turn\n";
             }

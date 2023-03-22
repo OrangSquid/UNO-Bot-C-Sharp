@@ -14,11 +14,12 @@ public class GameSystem : IGameSystem
     private readonly IDrawStyle _drawStyle;
     private readonly IStackStyle _stackStyle;
     private readonly bool _mustPlay;
+    private readonly bool _jumpIn;
     private GameState _state;
 
     public GameState State => _state;
 
-    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay, IStackStyle stackStyle)
+    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay, IStackStyle stackStyle, bool jumpIn)
     {
         _playersByOrder = new(nPlayers);
         _allCardsDict = allCardsDict;
@@ -43,6 +44,7 @@ public class GameSystem : IGameSystem
         _state = new GameState(startingCard, _playersByOrder.First(), _playersByOrder.Count);
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;
+        _jumpIn = jumpIn;
     }
 
     public void CardPlay(int playerId, string cardId)
@@ -66,7 +68,12 @@ public class GameSystem : IGameSystem
         }
         if (playerId != _state.CurrentPlayer.Id)
         {
-            throw new NotPlayersTurnException();
+            if (_jumpIn && _state.OnTable != cardToBePlayed)
+            {
+                throw new NotPlayersTurnException();
+            }
+            _state.CurrentPlayer = GetPlayer(playerId);
+            _state.JumpedIn = true;
         }
         _state.CurrentPlayer.RemoveCard(cardId);
         _state.Refresh();
@@ -147,7 +154,7 @@ public class GameSystem : IGameSystem
         }
         _state.Refresh();
         _state.PreviousPlayer = _state.CurrentPlayer;
-        _state.HasSkiped = true;
+        _state.HasSkipped = true;
         SetNextPlayer();
     }
 
@@ -171,17 +178,10 @@ public class GameSystem : IGameSystem
             wildCard.Color = Enum.Parse<CardColors>(color);
             _state.ColorChanged = wildCard.Color;
             _state.WaitingOnColorChange = false;
-            if (wildCard.Symbol == WildCardSymbols.PlusFour)
+            SetNextPlayer();
+            if (wildCard.Symbol == WildCardSymbols.PlusFour && _stackStyle.ForcedDraw(ref _state, wildCard))
             {
-                SetNextPlayer();
-                if (_stackStyle.ForcedDraw(ref _state, wildCard))
-                {
-                    _state.PlayersSkipped.Add(_state.CurrentPlayer);
-                    SetNextPlayer();
-                }
-            }
-            else
-            {
+                _state.PlayersSkipped.Add(_state.CurrentPlayer);
                 SetNextPlayer();
             }
 

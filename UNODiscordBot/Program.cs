@@ -29,6 +29,8 @@ public static class Program
         });
 
         slash.RegisterCommands<UnoSlashCommands>(556652655397830657);
+        slash.RegisterCommands<UnoSlashCommands>(1088175511320145970);
+
 
         await discord.ConnectAsync();
         await Task.Delay(-1);

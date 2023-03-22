@@ -16,14 +16,14 @@ public readonly struct Settings
     //public int NoUNOPenalty { get; }
 
     public Settings(bool playSameSymbol,
-                    bool stackPlusTwo,
-                    bool stackWildPlusFour,
-                    bool mustPlay,
-                    bool jumpIn,
-                    bool drawUntilPlayableCard,
-                    bool numZeroPlayed,
-                    bool numSevenPlayed,
-                    int noUnoPenalty)
+        bool stackPlusTwo,
+        bool stackWildPlusFour,
+        bool mustPlay,
+        bool jumpIn,
+        bool drawUntilPlayableCard,
+        bool numZeroPlayed,
+        bool numSevenPlayed,
+        int noUnoPenalty)
     {
         DrawUntilPlayableCard = drawUntilPlayableCard;
     }

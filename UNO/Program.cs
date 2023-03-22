@@ -58,8 +58,8 @@ public static class Program
         //bool stackWildPlusFour = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("mustPlay");
         bool mustPlay = Convert.ToBoolean(Console.ReadLine());
-        //Console.WriteLine("jumpIn");
-        //bool jumpIn = Convert.ToBoolean(Console.ReadLine());
+        Console.WriteLine("jumpIn");
+        bool jumpIn = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("drawUntilPlayableCard");
         bool drawUntilPlayableCard = Convert.ToBoolean(Console.ReadLine());
         //Console.WriteLine("numZeroPlayed");
@@ -76,7 +76,7 @@ public static class Program
             DrawUntilPlayableCard = drawUntilPlayableCard,
             StackPlusTwo = stackPlusTwo,
             MustPlay = mustPlay,
-            
+            JumpIn = jumpIn
         };
         _uno = gsf.Build();
 
@@ -163,15 +163,24 @@ public static class Program
         {
             return;
         }
+
         try
         {
             int playerId = Convert.ToInt32(Console.ReadLine());
             _uno.DrawCard(playerId);
             StateInterpreter(false);
-        } 
+        }
         catch (GameIsFinishedException)
         {
             Console.WriteLine("Games has finished");
+        }
+        catch (NotPlayersTurnException)
+        {
+            Console.WriteLine("Not player's turn");
+        }
+        catch (PlayerCannotDrawException)
+        {
+            Console.WriteLine("You cannot draw");
         }
     }
 
@@ -270,7 +279,7 @@ public static class Program
             {
                 Console.WriteLine("Color changed to: {0}", _uno.State.ColorChanged);
             }
-            if(_uno.State.HasSkiped)
+            if(_uno.State.HasSkipped)
             {
                 Console.WriteLine("Player {0} has skipped their turn", _uno.State.PreviousPlayer);
             }

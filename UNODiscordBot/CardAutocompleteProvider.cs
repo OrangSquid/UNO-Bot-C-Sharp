@@ -2,6 +2,7 @@
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
 using UNOLib;
+using UNOLib.Cards;
 
 namespace UNODiscordBot;
 

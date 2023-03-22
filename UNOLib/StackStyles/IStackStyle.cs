@@ -1,4 +1,6 @@
-﻿namespace UNOLib.StackStyles;
+﻿using UNOLib.Cards;
+
+namespace UNOLib.StackStyles;
 
 /// <summary>
 /// Interface for stack styles for the different forced draw cards

@@ -1,14 +1,13 @@
-﻿
-namespace UNOLib;
+﻿namespace UNOLib.Cards;
 
 /// <summary>
 /// Wild Cards
 /// </summary>
-internal class WildCard : ICard
+public class WildCard : ICard
 {
     public CardColors Color { get; set; }
 
-    internal WildCardSymbols Symbol { get; init; }
+    public WildCardSymbols Symbol { get; init; }
     private const string ActualColor = "Wild";
 
     public WildCard(CardColors color, WildCardSymbols symbol)

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace UNODiscordBot;
 
-public class Program
+public static class Program
 {
     public static async Task Main()
     {

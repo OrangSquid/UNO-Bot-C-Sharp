@@ -1,5 +1,4 @@
-﻿
-namespace UNOLib;
+﻿namespace UNOLib.Cards;
 
 internal class CardComparer : Comparer<string>
 {

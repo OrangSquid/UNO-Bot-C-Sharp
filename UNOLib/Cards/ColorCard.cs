@@ -1,9 +1,9 @@
-﻿namespace UNOLib;
+﻿namespace UNOLib.Cards;
 
 /// <summary>
 /// Color Cards
 /// </summary>
-internal class ColorCard : ICard
+public class ColorCard : ICard
 {
     public CardColors Color { get; }
     public ColorCardSymbols Symbol { get; init; }

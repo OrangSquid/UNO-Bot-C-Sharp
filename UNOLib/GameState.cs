@@ -1,4 +1,6 @@
-﻿namespace UNOLib;
+﻿using UNOLib.Cards;
+
+namespace UNOLib;
 
 public struct GameState
 {

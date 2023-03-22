@@ -1,4 +1,5 @@
-﻿using UNOLib.DrawStyle;
+﻿using UNOLib.Cards;
+using UNOLib.DrawStyle;
 using UNOLib.StackStyles;
 
 namespace UNOLib;
@@ -14,9 +15,9 @@ public class GameSystemFactory
     private static readonly List<ICard> AllCards;
     private readonly int _nPlayers;
 
-    public required bool DrawUntilPlayableCard { get; init; }
-    public required bool StackPlusTwo { get; init; }
-    public required bool MustPlay { get; init; }
+    public bool DrawUntilPlayableCard { get; init; }
+    public bool StackPlusTwo { get; init; }
+    public bool MustPlay { get; init; }
 
     static GameSystemFactory()
     {

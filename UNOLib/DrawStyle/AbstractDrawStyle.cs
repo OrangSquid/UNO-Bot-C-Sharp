@@ -1,4 +1,6 @@
-﻿namespace UNOLib.DrawStyle;
+﻿using UNOLib.Cards;
+
+namespace UNOLib.DrawStyle;
 
 internal abstract class AbstractDrawStyle : IDrawStyle
 {

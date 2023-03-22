@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using UNOLib.Cards;
 using UNOLib.DrawStyle;
 using UNOLib.Exceptions;
 using UNOLib.StackStyles;
@@ -32,14 +33,6 @@ public class GameSystem : IGameSystem
                 player.AddCard(_drawStyle.Draw());
             }
         }
-
-        ICard startingCard = _drawStyle.Draw();
-        while(startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip and ColorCardSymbols.PlusTwo and ColorCardSymbols.Reverse } )
-        {
-            _drawStyle.Push(startingCard);
-            startingCard = _drawStyle.Draw();
-        }
-        
         _state = new GameState(_drawStyle.Draw(), _playersByOrder.First(), _playersByOrder.Count);
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;
@@ -220,6 +213,8 @@ public class GameSystem : IGameSystem
                     }
                     // TODO find better solution
                     return;
+                default:
+                    break;
             }
             SetNextPlayer();
         }
@@ -247,7 +242,7 @@ public class GameSystem : IGameSystem
     }
 
     /// <summary>
-    /// Skips the next player when a Skip Card is played
+    /// Skips the next player when a Skip Card
     /// </summary>
     private void SkipPlayer()
     {

@@ -1,5 +1,4 @@
-﻿
-namespace UNOLib;
+﻿namespace UNOLib.Cards;
 
 /// <summary>
 /// Enumeration with the card colors
@@ -15,7 +14,7 @@ public enum CardColors
 /// <summary>
 /// Enumeration with the Color Card's symbols
 /// </summary>
-internal enum ColorCardSymbols
+public enum ColorCardSymbols
 {
     Zero,
     One,
@@ -35,7 +34,7 @@ internal enum ColorCardSymbols
 /// <summary>
 /// Enumeration with the Wild Card's symbols
 /// </summary>
-internal enum WildCardSymbols
+public enum WildCardSymbols
 {
     Simple,
     PlusFour
@@ -46,7 +45,7 @@ internal enum WildCardSymbols
 /// </summary>
 public interface ICard
 {
-    internal CardColors Color { get; }
+    public CardColors Color { get; }
 
     /// <summary>
     /// Checks if the given card can be played on top of the card on the table

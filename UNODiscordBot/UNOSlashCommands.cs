@@ -1,5 +1,5 @@
-﻿using DSharpPlus.SlashCommands;
-using System.Numerics;
+﻿using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using UNODiscordBot.Exceptions;
 using UNOLib;
 using UNOLib.Cards;
@@ -200,6 +200,8 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         string message = "---------------\n";
 
+        var embedMessage = new DiscordEmbedBuilder();
+        string imageURL = "https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/";
         if (newGame)
         {
             message += "Game started\n";
@@ -215,13 +217,13 @@ public class UnoSlashCommands : ApplicationCommandModule
             // Played a card
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
-                message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n";
+                embedMessage.WithTitle($"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n");
                 foreach (ICard card in state.CardsPlayed)
                 {
                     message += card;
                     message += "\n";
                 }
-
+                
             }
             // Cards were drawn
             if (state.WhoDrewCards != null)
@@ -250,6 +252,8 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.ColorChanged != null)
             {
                 message += $"Color changed to: {state.ColorChanged}\n";
+                imageURL += state.ColorChanged.ToString().ToLower();
+                imageURL += "%20";
             }
             if (state is { HasSkipped: true, PreviousPlayer: { } })
             {
@@ -267,9 +271,14 @@ public class UnoSlashCommands : ApplicationCommandModule
 
         message += "---------------";
 
-        await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new()
-        {
-            Content = message
-        });
+        
+
+        imageURL += state.OnTable.ToURL();
+        await ctx.CreateResponseAsync(embedMessage.WithThumbnail(imageURL).WithDescription(message).WithTimestamp(DateTime.Now));
+
+        //await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new()
+        //{
+        //    Content = message
+        //});
     }
 }

@@ -10,7 +10,7 @@ public static class Program
     {
         Console.WriteLine("Main/Dev");
         string choice = Console.ReadLine() ?? string.Empty;
-        string token = File.ReadAllText(choice == "m" ? "MToken.txt" : "DToken.txt");
+        string token = File.ReadAllText(choice == "m" ? "MToken.txt" : "C://Users//franc//OneDrive - FCT NOVA//Programação//UNO-Bot-C-Sharp//UNODiscordBot//DToken.txt");
 
         DiscordClient discord = new(new DiscordConfiguration
         {

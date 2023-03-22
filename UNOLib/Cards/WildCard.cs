@@ -25,4 +25,9 @@ public class WildCard : ICard
     {
         return ActualColor + " " + Symbol.ToString();
     }
+
+    public string ToURL()
+    {
+        return ActualColor.ToLower() + "%20" + Symbol.ToString().ToLower() + ".png"; ;
+    }
 }

@@ -54,4 +54,5 @@ public interface ICard
     /// <returns>True if it can be played and false otherwise</returns>
     internal bool CanBePlayed(ICard card);
     public string ToString();
+    public string ToURL();
 }

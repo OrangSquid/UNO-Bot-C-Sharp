@@ -10,7 +10,7 @@ public static class Program
     private static IGameSystem? _uno;
     public static void Main(string[] args)
     {
-        string? command = "";
+        var command = "";
         while (command is not null && !command.Equals("exit"))
         {
             command = Console.ReadLine();
@@ -54,15 +54,15 @@ public static class Program
         //Console.WriteLine("playSameSymbol");
         //bool playSameSymbol = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("stackPlusTwo");
-        bool stackPlusTwo = Convert.ToBoolean(Console.ReadLine());
+        var stackPlusTwo = Convert.ToBoolean(Console.ReadLine());
         //Console.WriteLine("stackWildPlusFour");
         //bool stackWildPlusFour = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("mustPlay");
-        bool mustPlay = Convert.ToBoolean(Console.ReadLine());
+        var mustPlay = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("jumpIn");
-        bool jumpIn = Convert.ToBoolean(Console.ReadLine());
+        var jumpIn = Convert.ToBoolean(Console.ReadLine());
         Console.WriteLine("drawUntilPlayableCard");
-        bool drawUntilPlayableCard = Convert.ToBoolean(Console.ReadLine());
+        var drawUntilPlayableCard = Convert.ToBoolean(Console.ReadLine());
         //Console.WriteLine("numZeroPlayed");
         //bool numZeroPlayed = Convert.ToBoolean(Console.ReadLine());
         //Console.WriteLine("numSevenPlayed");
@@ -71,7 +71,7 @@ public static class Program
         //int noUNOPenalty = Convert.ToInt32(Console.ReadLine());
 
         Console.WriteLine("numPlayers");
-        int nPlayers = Convert.ToInt32(Console.ReadLine());
+        var nPlayers = Convert.ToInt32(Console.ReadLine());
         GameSystemFactory gsf = new(nPlayers)
         {
             DrawUntilPlayableCard = drawUntilPlayableCard,
@@ -92,7 +92,7 @@ public static class Program
             return;
         }
         string? cardId = Console.ReadLine();
-        int playerId = Convert.ToInt32(Console.ReadLine());
+        var playerId = Convert.ToInt32(Console.ReadLine());
         try
         {
             if (cardId != null)
@@ -124,7 +124,7 @@ public static class Program
             return;
         }
         string? color = Console.ReadLine();
-        int playerId = Convert.ToInt32(Console.ReadLine());
+        var playerId = Convert.ToInt32(Console.ReadLine());
         try
         {
             if (color != null) 
@@ -143,11 +143,11 @@ public static class Program
         {
             return;
         }
-        int nPlayer = Convert.ToInt32(Console.ReadLine());
+        var nPlayer = Convert.ToInt32(Console.ReadLine());
         try
         {
-            IPlayer player = _uno.GetPlayer(nPlayer);
-            foreach (ICard card in player)
+            var player = _uno.GetPlayer(nPlayer);
+            foreach (var card in player)
             {
                 Console.WriteLine(card);
             }
@@ -167,7 +167,7 @@ public static class Program
 
         try
         {
-            int playerId = Convert.ToInt32(Console.ReadLine());
+            var playerId = Convert.ToInt32(Console.ReadLine());
             _uno.DrawCard(playerId);
             StateInterpreter(false);
         }
@@ -191,7 +191,7 @@ public static class Program
         {
             return;
         }
-        foreach (IPlayer player in _uno)
+        foreach (var player in _uno)
         {
             Console.Write(player == _uno.State.CurrentPlayer ? "-> " : "   ");
 
@@ -208,7 +208,7 @@ public static class Program
         }
         try
         {
-            int playerId = Convert.ToInt32(Console.ReadLine());
+            var playerId = Convert.ToInt32(Console.ReadLine());
             _uno.Skip(playerId);
             StateInterpreter(false);
         }
@@ -246,7 +246,7 @@ public static class Program
             if (_uno.State.CardsPlayed.Count != 0 && _uno.State.PreviousPlayer != null)
             {
                 Console.WriteLine("Player {0} played:", _uno.State.PreviousPlayer.Id);
-                foreach (ICard card in _uno.State.CardsPlayed)
+                foreach (var card in _uno.State.CardsPlayed)
                 {
                     Console.WriteLine(card);
                 }
@@ -261,7 +261,7 @@ public static class Program
             if (_uno.State.PlayersSkipped.Count != 0)
             {
                 Console.WriteLine("These Players were skipped: ");
-                foreach (IPlayer player in _uno.State.PlayersSkipped)
+                foreach (var player in _uno.State.PlayersSkipped)
                 {
                     Console.WriteLine("Player {0}", player.Id);
                 }

@@ -19,11 +19,11 @@ public static class Program
             Intents = DiscordIntents.AllUnprivileged
         });
 
-        ServiceProvider services = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddSingleton<UnoLibWrapper>()
             .BuildServiceProvider();
 
-        SlashCommandsExtension slash = discord.UseSlashCommands(new SlashCommandsConfiguration()
+        var slash = discord.UseSlashCommands(new SlashCommandsConfiguration()
         {
             Services = services
         });

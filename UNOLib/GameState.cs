@@ -3,13 +3,13 @@ using UNOLib.Player;
 
 namespace UNOLib;
 
-public struct GameState
+public record struct GameState
 {
     public ICard OnTable { get; internal set; }
     public LinkedList<ICard> CardsPlayed { get; }
     public IPlayer CurrentPlayer { get; internal set; }
     public IPlayer? PreviousPlayer { get; internal set; }
-    public bool JustReversedOrder { get; private set; }
+    public bool JustReversedOrder { get; internal set; }
     public List<IPlayer> PlayersSkipped { get; }
     public IPlayer? WhoDrewCards { get; internal set; }
     // Note: CardsDrawn is set to a number when a wild plus 4 is played however nobody is set to have drawn those cards
@@ -17,7 +17,6 @@ public struct GameState
     public int CardsDrawn { get; internal set; }
     public CardColors? ColorChanged { get => _colorChanged; internal set => _colorChanged = value; }
     public bool NewTurn { get; internal set; }
-    internal bool ClockwiseOrder { get; set; }
     public bool WaitingOnColorChange { get; internal set; }
     public bool GameFinished { get; internal set; }
     internal bool CanSkip { get; set; }
@@ -34,7 +33,6 @@ public struct GameState
     {
         OnTable = onTable;
         CurrentPlayer = currentPlayer;
-        ClockwiseOrder = true;
         WaitingOnColorChange = false;
         PlayersSkipped = new(nPlayers);
         CardsPlayed = new();
@@ -50,7 +48,9 @@ public struct GameState
     {
         JustReversedOrder = false;
         if (WhoDrewCards != null)
+        {
             CardsDrawn = 0;
+        }
         WhoDrewCards = null;
         _colorChanged = null;
         WaitingOnColorChange = false;
@@ -63,14 +63,5 @@ public struct GameState
         StackPlusFour = false;
         StackPlusTwo = false;
         JumpedIn = false;
-    }
-
-    /// <summary>
-    /// Reverses the play order. Clockwise or Counter Clockwise
-    /// </summary>
-    internal void ReverseOrder()
-    {
-        ClockwiseOrder = !ClockwiseOrder;
-        JustReversedOrder = true;
     }
 }

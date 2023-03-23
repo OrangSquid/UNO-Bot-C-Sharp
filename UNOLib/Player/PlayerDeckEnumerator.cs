@@ -13,11 +13,10 @@ public class PlayerDeckEnumerator : IEnumerator<ICard>
     object IEnumerator.Current => Current;
 
     private IEnumerator<ICard> _stackEnumerator;
-    private SortedDictionary<string, Stack<ICard>>.Enumerator _dictionaryEnumerator;
+    private readonly SortedDictionary<string, Stack<ICard>>.Enumerator _dictionaryEnumerator;
 
     public PlayerDeckEnumerator(SortedDictionary<string, Stack<ICard>>.Enumerator enumerator)
     {
-        // TODO Possible null dereference
         _dictionaryEnumerator = enumerator;
         enumerator.MoveNext();
         _stackEnumerator = enumerator.Current.Value.GetEnumerator();

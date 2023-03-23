@@ -18,6 +18,5 @@ internal class CardComparer : Comparer<string>
             return 1;
         }
         return x.CompareTo(y);
-
     }
 }

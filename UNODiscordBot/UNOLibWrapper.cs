@@ -60,7 +60,7 @@ public class UnoLibWrapper
             MustPlay = false,
             JumpIn = true
         };
-        IGameSystem gs = gsf.Build();
+        var gs = gsf.Build();
         _guildGames.Add(guildId, new GameStruct()
         {
             Gs = gs,
@@ -72,7 +72,7 @@ public class UnoLibWrapper
 
     public IPlayer CheckCards(ulong guildId, DiscordUser player)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -81,7 +81,7 @@ public class UnoLibWrapper
 
     public GameState PlayCard(ulong guildId, DiscordUser player, string card)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -91,7 +91,7 @@ public class UnoLibWrapper
 
     public GameState DrawCard(ulong guildId, DiscordUser player)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -101,7 +101,7 @@ public class UnoLibWrapper
 
     public GameState ChangeColor(ulong guildId, DiscordUser player, string color)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -111,7 +111,7 @@ public class UnoLibWrapper
 
     public DiscordUser GetUser(ulong guildId, int playerId)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -120,7 +120,7 @@ public class UnoLibWrapper
 
     public GameState Skip(ulong guildId, DiscordUser player) 
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }

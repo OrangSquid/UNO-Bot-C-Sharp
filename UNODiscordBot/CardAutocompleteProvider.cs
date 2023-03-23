@@ -13,9 +13,9 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         var ulw = ctx.Services.GetService<UnoLibWrapper>();
         try
         {
-            IPlayer player = ulw.CheckCards(ctx.Guild.Id, ctx.User);
+            var player = ulw.CheckCards(ctx.Guild.Id, ctx.User);
             var cardChoices = new List<DiscordAutoCompleteChoice>(player.NumCards);
-            foreach (ICard card in player)
+            foreach (var card in player)
             {
                 cardChoices.Add(new DiscordAutoCompleteChoice(card.ToString(), card.ToString()));
             }

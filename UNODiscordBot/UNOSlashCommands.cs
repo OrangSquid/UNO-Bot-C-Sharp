@@ -54,7 +54,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            GameState state = Uno.StartGame(ctx.Guild.Id);
+            var state = Uno.StartGame(ctx.Guild.Id);
             await StateInterpreter(true, state, ctx);
         }
         catch (GameAlreadyStartedException)
@@ -74,7 +74,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            GameState state = Uno.PlayCard(ctx.Guild.Id, ctx.User, card);
+            var state = Uno.PlayCard(ctx.Guild.Id, ctx.User, card);
             await StateInterpreter(false, state, ctx);
         }
         catch (GameDoesNotExistException)
@@ -105,7 +105,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            GameState state = Uno.ChangeColor(ctx.Guild.Id, ctx.User, color);
+            var state = Uno.ChangeColor(ctx.Guild.Id, ctx.User, color);
             await StateInterpreter(false, state, ctx);
         }
         catch (GameDoesNotExistException)
@@ -152,9 +152,9 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            IPlayer player = Uno.CheckCards(ctx.Guild.Id, ctx.User);
-            string message = "Here's your current deck:\n";
-            foreach (ICard card in player)
+            var player = Uno.CheckCards(ctx.Guild.Id, ctx.User);
+            var message = "Here's your current deck:\n";
+            foreach (var card in player)
             {
 
                 message += card.ToString();
@@ -199,7 +199,7 @@ public class UnoSlashCommands : ApplicationCommandModule
 
     private async Task StateInterpreter(bool newGame, GameState state, InteractionContext ctx)
     {
-        string message = "---------------\n";
+        var message = "---------------\n";
 
         if (newGame)
         {
@@ -217,7 +217,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
                 message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n";
-                foreach (ICard card in state.CardsPlayed)
+                foreach (var card in state.CardsPlayed)
                 {
                     message += card;
                     message += "\n";
@@ -233,7 +233,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.PlayersSkipped.Count != 0)
             {
                 message += "These Players were skipped: \n";
-                foreach (IPlayer player in state.PlayersSkipped)
+                foreach (var player in state.PlayersSkipped)
                 {
                     message += $"Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
                 }

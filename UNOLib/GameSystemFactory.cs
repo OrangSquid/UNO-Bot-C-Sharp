@@ -28,7 +28,11 @@ public class GameSystemFactory
         {
             foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
             {
-                ICard card = new ColorCard(color, symbol);
+                ICard card = new ColorCard()
+                {
+                    Color = color,
+                    Symbol = symbol
+                };
                 AllCardsDict.Add(card.ToString(), card);
                 int i = symbol == ColorCardSymbols.Zero ? NumberOfZeros : NumberOfEachColorCard;
                 for (; i > 0; i--)
@@ -40,9 +44,12 @@ public class GameSystemFactory
         foreach (WildCardSymbols symbol in Enum.GetValuesAsUnderlyingType<WildCardSymbols>())
         {
             // CardColors.RED is simply used as a placeholder
-            ICard card = new WildCard(CardColors.Red, symbol);
+            ICard card = new WildCard
+            {
+                Symbol = symbol
+            };
             AllCardsDict.Add(card.ToString(), card);
-            for (int i = 0; i < NumberOfEachWildCard; i++)
+            for (var i = 0; i < NumberOfEachWildCard; i++)
             {
                 AllCards.Add(card);
             }

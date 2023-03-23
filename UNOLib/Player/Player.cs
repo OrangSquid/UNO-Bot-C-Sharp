@@ -7,7 +7,7 @@ namespace UNOLib.Player;
 
 internal class Player : IPlayer
 {
-    private readonly SortedDictionary<string, Stack<ICard>> _deck;
+    private readonly SortedDictionary<string, Stack<ICard>> _deck = new(new CardComparer());
     private int _numPlusTwoCards;
     private int _numWildPlusFourCards;
 
@@ -19,10 +19,6 @@ internal class Player : IPlayer
     public Player(int id)
     {
         Id = id;
-        NumCards = 0;
-        _numPlusTwoCards = 0;
-        _numWildPlusFourCards = 0;
-        _deck = new(new CardComparer());
     }
 
     public void AddCard(ICard card)
@@ -53,7 +49,7 @@ internal class Player : IPlayer
         {
             throw new PlayerDoesNotHaveCardException();
         }
-        ICard card = cardsSameValue.Pop();
+        var card = cardsSameValue.Pop();
         // Clear stack of the same cards
         if (cardsSameValue.Count == 0)
         {

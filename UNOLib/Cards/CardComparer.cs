@@ -2,21 +2,22 @@
 
 internal class CardComparer : Comparer<string>
 {
+    // Compare by putting Wild Cards first then the rest of the cards alphabetically
     public override int Compare(string? x, string? y)
     {
-        if (x.StartsWith("Wild"))
+        if (x != null && x.StartsWith("Wild"))
         {
-            if (y.StartsWith("Wild"))
+            if (y != null && y.StartsWith("Wild"))
             {
-                return x.CompareTo(y);
+                return string.Compare(x, y, StringComparison.Ordinal);
             }
 
             return -1;
         }
-        if (y.StartsWith("Wild"))
+        if (y != null && y.StartsWith("Wild"))
         {
             return 1;
         }
-        return x.CompareTo(y);
+        return string.Compare(x, y, StringComparison.Ordinal);
     }
 }

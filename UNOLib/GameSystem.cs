@@ -162,7 +162,7 @@ public class GameSystem : IGameSystem
         {
             throw new GameIsFinishedException();
         }
-        if (!_state.WaitingOnColorChange)
+        if (!_state.WaitingOnColorChange || _state.OnTable is WildCard)
         {
             throw new CannotChangeColorException();
         }
@@ -170,19 +170,15 @@ public class GameSystem : IGameSystem
         {
             throw new NotPlayersTurnException();
         }
-
-        if (_state.OnTable is WildCard wildCard)
+        var wildCard = _state.OnTable as WildCard;
+        wildCard.Color = Enum.Parse<CardColors>(color);
+        _state.ColorChanged = wildCard.Color;
+        _state.WaitingOnColorChange = false;
+        SetNextPlayer();
+        if (wildCard.Symbol == WildCardSymbols.PlusFour && _stackStyle.ForcedDraw(ref _state, wildCard))
         {
-            wildCard.Color = Enum.Parse<CardColors>(color);
-            _state.ColorChanged = wildCard.Color;
-            _state.WaitingOnColorChange = false;
+            _state.PlayersSkipped.Add(_state.CurrentPlayer);
             SetNextPlayer();
-            if (wildCard.Symbol == WildCardSymbols.PlusFour && _stackStyle.ForcedDraw(ref _state, wildCard))
-            {
-                _state.PlayersSkipped.Add(_state.CurrentPlayer);
-                SetNextPlayer();
-            }
-
         }
     }
 

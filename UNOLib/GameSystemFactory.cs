@@ -43,7 +43,6 @@ public class GameSystemFactory
         }
         foreach (WildCardSymbols symbol in Enum.GetValuesAsUnderlyingType<WildCardSymbols>())
         {
-            // CardColors.RED is simply used as a placeholder
             ICard card = new WildCard
             {
                 Symbol = symbol

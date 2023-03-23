@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UNOLib.Cards;
 
-namespace UNOLib;
+namespace UNOLib.Player;
 
 /// <summary>
 /// Enumerator that iterates over all the cards in a Player's Deck

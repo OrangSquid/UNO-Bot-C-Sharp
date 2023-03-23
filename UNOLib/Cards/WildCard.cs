@@ -7,8 +7,8 @@ public class WildCard : ICard
 {
     public CardColors Color { get; set; }
 
-    public WildCardSymbols Symbol { get; init; }
-    private const string ActualColor = "Wild";
+    public WildCardSymbols Symbol { get; }
+    public const string ActualColor = "Wild";
 
     public WildCard(CardColors color, WildCardSymbols symbol)
     {

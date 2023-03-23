@@ -3,7 +3,7 @@ using System.Collections;
 using UNOLib.Cards;
 using UNOLib.Exceptions;
 
-namespace UNOLib;
+namespace UNOLib.Player;
 
 internal class Player : IPlayer
 {

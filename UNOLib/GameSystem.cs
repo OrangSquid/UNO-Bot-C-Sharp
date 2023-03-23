@@ -2,6 +2,7 @@
 using UNOLib.Cards;
 using UNOLib.DrawStyle;
 using UNOLib.Exceptions;
+using UNOLib.Player;
 using UNOLib.StackStyles;
 
 namespace UNOLib;
@@ -27,7 +28,7 @@ public class GameSystem : IGameSystem
         _drawStyle = drawStyle;
         for (int i = 0; i < nPlayers; i++)
         {
-            IPlayer player = new Player(i);
+            IPlayer player = new Player.Player(i);
             _playersByOrder.Add(player);
             for (int j = 0; j < CardsPerPlayer; j++)
             {

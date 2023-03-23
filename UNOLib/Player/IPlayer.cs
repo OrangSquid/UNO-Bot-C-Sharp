@@ -1,6 +1,6 @@
 ﻿using UNOLib.Cards;
 
-namespace UNOLib;
+namespace UNOLib.Player;
 
 public interface IPlayer : IEnumerable<ICard>
 {

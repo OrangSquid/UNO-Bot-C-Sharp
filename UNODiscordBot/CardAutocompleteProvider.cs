@@ -1,8 +1,8 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
-using UNOLib;
 using UNOLib.Cards;
+using UNOLib.Player;
 
 namespace UNODiscordBot;
 

@@ -4,6 +4,7 @@ using UNODiscordBot.Exceptions;
 using UNOLib;
 using UNOLib.Cards;
 using UNOLib.Exceptions;
+using UNOLib.Player;
 
 namespace UNODiscordBot;
 

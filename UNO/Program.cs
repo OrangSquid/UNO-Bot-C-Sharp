@@ -75,7 +75,7 @@ public static class Program
             DrawUntilPlayableCard = drawUntilPlayableCard,
             StackPlusTwo = stackPlusTwo,
             MustPlay = mustPlay,
-            
+
         };
         _uno = gsf.Build();
 
@@ -109,7 +109,7 @@ public static class Program
         {
             Console.WriteLine("Games has finished");
         }
-        catch(NotPlayersTurnException)
+        catch (NotPlayersTurnException)
         {
             Console.WriteLine("Not player's turn");
         }
@@ -125,7 +125,7 @@ public static class Program
         int playerId = Convert.ToInt32(Console.ReadLine());
         try
         {
-            if (color != null) 
+            if (color != null)
                 _uno.ChangeOnTableColor(playerId, color);
             StateInterpreter(false);
         }
@@ -167,7 +167,7 @@ public static class Program
             int playerId = Convert.ToInt32(Console.ReadLine());
             _uno.DrawCard(playerId);
             StateInterpreter(false);
-        } 
+        }
         catch (GameIsFinishedException)
         {
             Console.WriteLine("Games has finished");
@@ -265,15 +265,15 @@ public static class Program
             {
                 Console.WriteLine("Waiting for Player {0} to choose a color", _uno.State.CurrentPlayer.Id);
             }
-            if(_uno.State.ColorChanged != null)
+            if (_uno.State.ColorChanged != null)
             {
                 Console.WriteLine("Color changed to: {0}", _uno.State.ColorChanged);
             }
-            if(_uno.State.HasSkiped)
+            if (_uno.State.HasSkiped)
             {
                 Console.WriteLine("Player {0} has skipped their turn", _uno.State.PreviousPlayer);
             }
-            if(_uno.State.GameFinished)
+            if (_uno.State.GameFinished)
             {
                 Console.WriteLine("Game has ended");
             }

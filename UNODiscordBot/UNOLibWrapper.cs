@@ -116,7 +116,7 @@ public class UnoLibWrapper
         return game.Players[playerId];
     }
 
-    public GameState Skip(ulong guildId, DiscordUser player) 
+    public GameState Skip(ulong guildId, DiscordUser player)
     {
         if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {

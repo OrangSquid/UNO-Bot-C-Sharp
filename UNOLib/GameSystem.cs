@@ -73,7 +73,7 @@ public class GameSystem : IGameSystem
         }
         if (playerId != _state.CurrentPlayer.Id)
         {
-            if (!_jumpIn || _jumpIn && _state.OnTable != cardToBePlayed)
+            if (!_jumpIn || _jumpIn && ReferenceEquals(_state.OnTable, cardToBePlayed))
             {
                 throw new NotPlayersTurnException();
             }

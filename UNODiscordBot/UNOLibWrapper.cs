@@ -135,7 +135,8 @@ public class UnoLibWrapper
         {
             return "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
         }
-        else if (card is ColorCard cc) {
+        else if (card is ColorCard cc)
+        {
             string message = cc.Color.ToString().ToLower() + "%20";
 
             if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
@@ -165,5 +166,5 @@ public class UnoLibWrapper
         return game.Gs.GetPlayer(GetPlayerId(game, player));
     }
 
-    
+
 }

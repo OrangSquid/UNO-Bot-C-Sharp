@@ -10,20 +10,20 @@ public class WildCard : ICard
     public CardColors Color { get; set; }
     public required WildCardSymbols Symbol { get; init; }
 
-    public WildCard()
-    {
-        Color = CardColors.Red;
-    }
+public WildCard()
+{
+    Color = CardColors.Red;
+}
 
-    public bool CanBePlayed(ICard card) => card is WildCard || card.Color == Color;
+public bool CanBePlayed(ICard card) => card is WildCard || card.Color == Color;
 
-    public override string ToString()
-    {
-        return ActualColor + " " + Symbol;
-    }
+public override string ToString()
+{
+    return ActualColor + " " + Symbol;
+}
 
-    //public string ToURL()
-    //{
-    //    return ActualColor.ToLower() + "%20" + Symbol.ToString().ToLower() + ".png"; ;
-    //}
+//public string ToURL()
+//{
+//    return ActualColor.ToLower() + "%20" + Symbol.ToString().ToLower() + ".png"; ;
+//}
 }

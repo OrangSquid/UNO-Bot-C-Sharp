@@ -214,6 +214,8 @@ public class GameSystem : IGameSystem
                     }
                     // DO NOT SET UP NEXT PLAYER
                     return;
+                default:
+                    break;
             }
             SetNextPlayer();
         }

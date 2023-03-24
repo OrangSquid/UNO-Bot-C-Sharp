@@ -39,7 +39,7 @@ public class GameSystem : IGameSystem
         }
 
         var startingCard = _drawStyle.Draw();
-        while (startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip and ColorCardSymbols.PlusTwo and ColorCardSymbols.Reverse })
+        while (startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip or ColorCardSymbols.PlusTwo or ColorCardSymbols.Reverse })
         {
             _drawStyle.Push(startingCard);
             startingCard = _drawStyle.Draw();
@@ -55,7 +55,7 @@ public class GameSystem : IGameSystem
     public void CardPlay(int playerId, string cardId)
     {
         if (_state.GameFinished)
-        {
+        { 
             throw new GameIsFinishedException();
         }
         // Check if card is present in the dictionary for all cards and if card can be played on top of current one
@@ -73,7 +73,7 @@ public class GameSystem : IGameSystem
         }
         if (playerId != _state.CurrentPlayer.Id)
         {
-            if (!_jumpIn || _jumpIn && ReferenceEquals(_state.OnTable, cardToBePlayed))
+            if (!_jumpIn || _jumpIn && !ReferenceEquals(_state.OnTable, cardToBePlayed))
             {
                 throw new NotPlayersTurnException();
             }
@@ -162,7 +162,7 @@ public class GameSystem : IGameSystem
         {
             throw new GameIsFinishedException();
         }
-        if (!_state.WaitingOnColorChange || _state.OnTable is WildCard)
+        if (!_state.WaitingOnColorChange || _state.OnTable is not WildCard wildCard)
         {
             throw new CannotChangeColorException();
         }
@@ -170,7 +170,6 @@ public class GameSystem : IGameSystem
         {
             throw new NotPlayersTurnException();
         }
-        var wildCard = _state.OnTable as WildCard;
         wildCard.Color = Enum.Parse<CardColors>(color);
         _state.ColorChanged = wildCard.Color;
         _state.WaitingOnColorChange = false;

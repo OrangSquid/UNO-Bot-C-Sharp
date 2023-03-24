@@ -1,6 +1,8 @@
 ﻿using System.Collections;
+using UNOLib.Cards;
 using UNOLib.DrawStyle;
 using UNOLib.Exceptions;
+using UNOLib.Player;
 using UNOLib.StackStyles;
 
 namespace UNOLib;
@@ -14,27 +16,40 @@ public class GameSystem : IGameSystem
     private readonly IDrawStyle _drawStyle;
     private readonly IStackStyle _stackStyle;
     private readonly bool _mustPlay;
+    private readonly bool _jumpIn;
+    private bool _clockwiseOrder;
     private GameState _state;
-
+    
     public GameState State => _state;
 
-    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay, IStackStyle stackStyle)
+    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
+        IStackStyle stackStyle, bool jumpIn)
     {
         _playersByOrder = new(nPlayers);
         _allCardsDict = allCardsDict;
         _drawStyle = drawStyle;
-        for (int i = 0; i < nPlayers; i++)
+        for (var i = 0; i < nPlayers; i++)
         {
-            IPlayer player = new Player(i);
+            IPlayer player = new Player.Player(i);
             _playersByOrder.Add(player);
-            for (int j = 0; j < CardsPerPlayer; j++)
+            for (var j = 0; j < CardsPerPlayer; j++)
             {
                 player.AddCard(_drawStyle.Draw());
             }
         }
-        _state = new GameState(_drawStyle.Draw(), _playersByOrder.First(), _playersByOrder.Count);
+
+        var startingCard = _drawStyle.Draw();
+        while(startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip and ColorCardSymbols.PlusTwo and ColorCardSymbols.Reverse } )
+        {
+            _drawStyle.Push(startingCard);
+            startingCard = _drawStyle.Draw();
+        }
+        
+        _state = new GameState(startingCard, _playersByOrder.First(), _playersByOrder.Count);
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;
+        _jumpIn = jumpIn;
+        _clockwiseOrder = true;
     }
 
     public void CardPlay(int playerId, string cardId)
@@ -44,7 +59,7 @@ public class GameSystem : IGameSystem
             throw new GameIsFinishedException();
         }
         // Check if card is present in the dictionary for all cards and if card can be played on top of current one
-        if (!_allCardsDict.TryGetValue(cardId, out ICard? cardToBePlayed))
+        if (!_allCardsDict.TryGetValue(cardId, out var cardToBePlayed))
         {
             throw new CardCannotBePlayedException();
         }
@@ -58,7 +73,12 @@ public class GameSystem : IGameSystem
         }
         if (playerId != _state.CurrentPlayer.Id)
         {
-            throw new NotPlayersTurnException();
+            if (!_jumpIn || _jumpIn && ReferenceEquals(_state.OnTable, cardToBePlayed))
+            {
+                throw new NotPlayersTurnException();
+            }
+            _state.CurrentPlayer = GetPlayer(playerId);
+            _state.JumpedIn = true;
         }
         _state.CurrentPlayer.RemoveCard(cardId);
         _state.Refresh();
@@ -97,8 +117,12 @@ public class GameSystem : IGameSystem
         }
         _state.Refresh();
         _state.PreviousPlayer = _state.CurrentPlayer;
-        // TODO really should refactor this
-        if (_state.CardsDrawn != 0 && DrawMany(_state.CurrentPlayer) || !_drawStyle.GameDraw(ref _state))
+        if (_state.CardsDrawn != 0)
+        {
+            _stackStyle.ForcedDraw(ref _state);
+            SetNextPlayer();
+        }
+        else if (!_drawStyle.GameDraw(ref _state))
         {
             SetNextPlayer();
         }
@@ -110,17 +134,6 @@ public class GameSystem : IGameSystem
                 _state.CanSkip = true;
             }
         }
-    }
-
-    // TODO really should refactor this
-    private bool DrawMany(IPlayer player)
-    {
-        for (int i = 0; i < _state.CardsDrawn; i++)
-        {
-            player.AddCard(_drawStyle.Draw());
-        }
-        _state.WhoDrewCards = _state.CurrentPlayer;
-        return true;
     }
 
     public void Skip(int playerId)
@@ -139,7 +152,7 @@ public class GameSystem : IGameSystem
         }
         _state.Refresh();
         _state.PreviousPlayer = _state.CurrentPlayer;
-        _state.HasSkiped = true;
+        _state.HasSkipped = true;
         SetNextPlayer();
     }
 
@@ -149,7 +162,7 @@ public class GameSystem : IGameSystem
         {
             throw new GameIsFinishedException();
         }
-        if (!_state.WaitingOnColorChange)
+        if (!_state.WaitingOnColorChange || _state.OnTable is WildCard)
         {
             throw new CannotChangeColorException();
         }
@@ -157,26 +170,15 @@ public class GameSystem : IGameSystem
         {
             throw new NotPlayersTurnException();
         }
-
-        if (_state.OnTable is WildCard wildCard)
+        var wildCard = _state.OnTable as WildCard;
+        wildCard.Color = Enum.Parse<CardColors>(color);
+        _state.ColorChanged = wildCard.Color;
+        _state.WaitingOnColorChange = false;
+        SetNextPlayer();
+        if (wildCard.Symbol == WildCardSymbols.PlusFour && _stackStyle.ForcedDraw(ref _state, wildCard))
         {
-            wildCard.Color = Enum.Parse<CardColors>(color);
-            _state.ColorChanged = wildCard.Color;
-            _state.WaitingOnColorChange = false;
-            if (wildCard.Symbol == WildCardSymbols.PlusFour)
-            {
-                SetNextPlayer();
-                if (_stackStyle.ForcedDraw(ref _state, wildCard))
-                {
-                    _state.PlayersSkipped.Add(_state.CurrentPlayer);
-                    SetNextPlayer();
-                }
-            }
-            else
-            {
-                SetNextPlayer();
-            }
-
+            _state.PlayersSkipped.Add(_state.CurrentPlayer);
+            SetNextPlayer();
         }
     }
 
@@ -198,7 +200,7 @@ public class GameSystem : IGameSystem
                     SkipPlayer();
                     break;
                 case ColorCardSymbols.Reverse: //Reverses the order of players in the next round
-                    _state.ReverseOrder();
+                    ReverseOrder();
                     if (_playersByOrder.Count == 2)
                         SelectNextPlayer();
                     break;
@@ -210,7 +212,7 @@ public class GameSystem : IGameSystem
                         _state.PlayersSkipped.Add(_state.CurrentPlayer);
                         SetNextPlayer();
                     }
-                    // TODO find better solution
+                    // DO NOT SET UP NEXT PLAYER
                     return;
                 default:
                     break;
@@ -225,10 +227,10 @@ public class GameSystem : IGameSystem
     /// </summary>
     private void SelectNextPlayer()
     {
-        if (_state.ClockwiseOrder)
-            _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + 1) % _playersByOrder.Count];
-        else
-            _state.CurrentPlayer = _playersByOrder[(_state.CurrentPlayer.Id + _playersByOrder.Count - 1) % _playersByOrder.Count];
+        int playerId = _clockwiseOrder
+            ? _state.CurrentPlayer.Id + 1
+            : _state.CurrentPlayer.Id + _playersByOrder.Count - 1;
+        _state.CurrentPlayer = _playersByOrder[playerId % _playersByOrder.Count];
     }
 
     /// <summary>
@@ -241,12 +243,21 @@ public class GameSystem : IGameSystem
     }
 
     /// <summary>
-    /// Skips the next player when a Skip Card
+    /// Skips the next player when a Skip Card is played
     /// </summary>
     private void SkipPlayer()
     {
         SelectNextPlayer();
         _state.PlayersSkipped.Add(_state.CurrentPlayer);
+    }
+
+    /// <summary>
+    /// Reverses the play order. Clockwise or Counter Clockwise
+    /// </summary>
+    private void ReverseOrder()
+    {
+        _clockwiseOrder = !_clockwiseOrder;
+        _state.JustReversedOrder = true;
     }
 
     public IEnumerator<IPlayer> GetEnumerator()

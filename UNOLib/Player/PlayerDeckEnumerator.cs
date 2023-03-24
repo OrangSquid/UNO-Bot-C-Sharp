@@ -1,6 +1,7 @@
 ﻿using System.Collections;
+using UNOLib.Cards;
 
-namespace UNOLib;
+namespace UNOLib.Player;
 
 /// <summary>
 /// Enumerator that iterates over all the cards in a Player's Deck
@@ -16,10 +17,9 @@ public class PlayerDeckEnumerator : IEnumerator<ICard>
 
     public PlayerDeckEnumerator(SortedDictionary<string, Stack<ICard>>.Enumerator enumerator)
     {
-        // TODO Possible null dereference
         _dictionaryEnumerator = enumerator;
-        enumerator.MoveNext();
-        _stackEnumerator = enumerator.Current.Value.GetEnumerator();
+        _dictionaryEnumerator.MoveNext();
+        _stackEnumerator = _dictionaryEnumerator.Current.Value.GetEnumerator();
     }
 
     public void Dispose()

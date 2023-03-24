@@ -1,6 +1,8 @@
 ﻿using DSharpPlus.Entities;
 using UNODiscordBot.Exceptions;
 using UNOLib;
+using UNOLib.Cards;
+using UNOLib.Player;
 
 namespace UNODiscordBot;
 
@@ -56,9 +58,10 @@ public class UnoLibWrapper
         {
             DrawUntilPlayableCard = false,
             StackPlusTwo = true,
-            MustPlay = false
+            MustPlay = false,
+            JumpIn = true
         };
-        IGameSystem gs = gsf.Build();
+        var gs = gsf.Build();
         _guildGames.Add(guildId, new GameStruct()
         {
             Gs = gs,
@@ -70,7 +73,7 @@ public class UnoLibWrapper
 
     public IPlayer CheckCards(ulong guildId, DiscordUser player)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -79,7 +82,7 @@ public class UnoLibWrapper
 
     public GameState PlayCard(ulong guildId, DiscordUser player, string card)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -89,7 +92,7 @@ public class UnoLibWrapper
 
     public GameState DrawCard(ulong guildId, DiscordUser player)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -99,7 +102,7 @@ public class UnoLibWrapper
 
     public GameState ChangeColor(ulong guildId, DiscordUser player, string color)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
@@ -107,16 +110,7 @@ public class UnoLibWrapper
         return game.Gs.State;
     }
 
-    public DiscordUser GetUser(ulong guildId, int playerId)
-    {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
-        {
-            throw new GameDoesNotExistException();
-        }
-        return game.Players[playerId];
-    }
-
-    public GameState Skip(ulong guildId, DiscordUser player) 
+    public GameState Skip(ulong guildId, DiscordUser player)
     {
         if (!_guildGames.TryGetValue(guildId, out GameStruct game))
         {
@@ -124,6 +118,36 @@ public class UnoLibWrapper
         }
         game.Gs.Skip(GetPlayerId(game, player));
         return game.Gs.State;
+    }
+
+    public DiscordUser GetUser(ulong guildId, int playerId)
+    {
+        if (!_guildGames.TryGetValue(guildId, out var game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        return game.Players[playerId];
+    }
+
+    public string CardURL(ICard card)
+    {
+        if (card is WildCard wc)
+        {
+            return "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
+        }
+        else if (card is ColorCard cc) {
+            string message = cc.Color.ToString().ToLower() + "%20";
+
+            if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
+                message += cc.Symbol.ToString().ToLower();
+            else
+                message += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
+            message += ".png";
+
+            return message;
+        }
+
+        return "";
     }
 
     private static int GetPlayerId(GameStruct game, DiscordUser player)
@@ -140,4 +164,6 @@ public class UnoLibWrapper
     {
         return game.Gs.GetPlayer(GetPlayerId(game, player));
     }
+
+    
 }

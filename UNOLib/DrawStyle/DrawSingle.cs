@@ -1,4 +1,6 @@
-﻿namespace UNOLib.DrawStyle;
+﻿using UNOLib.Cards;
+
+namespace UNOLib.DrawStyle;
 
 /// <summary>
 /// Draw a single card
@@ -9,7 +11,7 @@ internal class DrawSingle : AbstractDrawStyle
 
     public override bool GameDraw(ref GameState state)
     {
-        ICard card = Draw();
+        var card = Draw();
         state.CurrentPlayer.AddCard(card);
         state.CardsDrawn = 1;
         state.WhoDrewCards = state.CurrentPlayer;

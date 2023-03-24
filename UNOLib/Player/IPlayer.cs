@@ -1,4 +1,7 @@
-﻿namespace UNOLib;
+﻿using UNOLib.Cards;
+using UNOLib.Exceptions;
+
+namespace UNOLib.Player;
 
 public interface IPlayer : IEnumerable<ICard>
 {

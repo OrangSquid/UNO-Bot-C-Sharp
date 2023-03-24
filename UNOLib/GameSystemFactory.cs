@@ -1,4 +1,5 @@
-﻿using UNOLib.DrawStyle;
+﻿using UNOLib.Cards;
+using UNOLib.DrawStyle;
 using UNOLib.StackStyles;
 
 namespace UNOLib;
@@ -14,9 +15,10 @@ public class GameSystemFactory
     private static readonly List<ICard> AllCards;
     private readonly int _nPlayers;
 
-    public bool DrawUntilPlayableCard { get; init; }
-    public bool StackPlusTwo { get; init; }
-    public bool MustPlay { get; init; }
+    public required bool DrawUntilPlayableCard { get; init; }
+    public required bool StackPlusTwo { get; init; }
+    public required bool MustPlay { get; init; }
+    public required bool JumpIn { get; init; }
 
     static GameSystemFactory()
     {
@@ -26,7 +28,11 @@ public class GameSystemFactory
         {
             foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
             {
-                ICard card = new ColorCard(color, symbol);
+                ICard card = new ColorCard()
+                {
+                    Color = color,
+                    Symbol = symbol
+                };
                 AllCardsDict.Add(card.ToString(), card);
                 int i = symbol == ColorCardSymbols.Zero ? NumberOfZeros : NumberOfEachColorCard;
                 for (; i > 0; i--)
@@ -37,10 +43,12 @@ public class GameSystemFactory
         }
         foreach (WildCardSymbols symbol in Enum.GetValuesAsUnderlyingType<WildCardSymbols>())
         {
-            // CardColors.RED is simply used as a placeholder
-            ICard card = new WildCard(CardColors.Red, symbol);
+            ICard card = new WildCard
+            {
+                Symbol = symbol
+            };
             AllCardsDict.Add(card.ToString(), card);
-            for (int i = 0; i < NumberOfEachWildCard; i++)
+            for (var i = 0; i < NumberOfEachWildCard; i++)
             {
                 AllCards.Add(card);
             }
@@ -74,6 +82,6 @@ public class GameSystemFactory
             stackStyle = new NoStack(drawStyle);
         }
 
-        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle);
+        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle, JumpIn);
     }
 }

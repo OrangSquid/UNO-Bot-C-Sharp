@@ -1,8 +1,10 @@
-﻿using DSharpPlus.SlashCommands;
-using System.Numerics;
+﻿using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using UNODiscordBot.Exceptions;
 using UNOLib;
+using UNOLib.Cards;
 using UNOLib.Exceptions;
+using UNOLib.Player;
 
 namespace UNODiscordBot;
 
@@ -52,7 +54,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            GameState state = Uno.StartGame(ctx.Guild.Id);
+            var state = Uno.StartGame(ctx.Guild.Id);
             await StateInterpreter(true, state, ctx);
         }
         catch (GameAlreadyStartedException)
@@ -72,7 +74,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            GameState state = Uno.PlayCard(ctx.Guild.Id, ctx.User, card);
+            var state = Uno.PlayCard(ctx.Guild.Id, ctx.User, card);
             await StateInterpreter(false, state, ctx);
         }
         catch (GameDoesNotExistException)
@@ -103,7 +105,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            GameState state = Uno.ChangeColor(ctx.Guild.Id, ctx.User, color);
+            var state = Uno.ChangeColor(ctx.Guild.Id, ctx.User, color);
             await StateInterpreter(false, state, ctx);
         }
         catch (GameDoesNotExistException)
@@ -150,9 +152,9 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            IPlayer player = Uno.CheckCards(ctx.Guild.Id, ctx.User);
-            string message = "Here's your current deck:\n";
-            foreach (ICard card in player)
+            var player = Uno.CheckCards(ctx.Guild.Id, ctx.User);
+            var message = "Here's your current deck:\n";
+            foreach (var card in player)
             {
 
                 message += card.ToString();
@@ -197,30 +199,58 @@ public class UnoSlashCommands : ApplicationCommandModule
 
     private async Task StateInterpreter(bool newGame, GameState state, InteractionContext ctx)
     {
-        string message = "---------------\n";
+        string message = "";
+        string author = "";
+        string colorHex = "";
+        string fieldTitle = "";
+        string fieldValue = "";
+        string imageURL = "https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/";
+        DiscordEmbedBuilder embedMessage = new DiscordEmbedBuilder();
+        DiscordEmoji emoji;
+
+
+
 
         if (newGame)
         {
-            message += "Game started\n";
+            embedMessage.WithTitle("Game started\n");
             message += $"Card on table: {state.OnTable}\n";
         }
         else
         {
+            // Player JumpedIn
+            if (state is { JumpedIn: true, PreviousPlayer: { } })
+            {
+                author += $"jumped in!";
+                embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
+                author = "";
+            }
             // Played a card
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
-                message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n";
+                author += $"played:\n";
+                embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
                 {
                     message += card;
                     message += "\n";
                 }
-
+                message += "\n";
+                author = "";
             }
             // Cards were drawn
             if (state.WhoDrewCards != null)
             {
-                message += $"Player {Uno.GetUser(ctx.Guild.Id, state.WhoDrewCards.Id).Username} drew {state.CardsDrawn} cards\n";
+                author += $"drew {state.CardsDrawn} card(s)\n";
+                embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
+
+                fieldTitle += $"{Uno.GetUser(ctx.Guild.Id, state.WhoDrewCards.Id).Username}'s card(s):\n";
+                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, 746444081424760943);
+                for (int i = 0; i < state.WhoDrewCards.NumCards; i++)
+                    fieldValue += emoji;
+                embedMessage.AddField(fieldTitle, fieldValue, false);
+                fieldTitle = "";
+                fieldValue = "";
             }
             // Players were skipped
             if (state.PlayersSkipped.Count != 0)
@@ -228,24 +258,26 @@ public class UnoSlashCommands : ApplicationCommandModule
                 message += "These Players were skipped: \n";
                 foreach (IPlayer player in state.PlayersSkipped)
                 {
-                    message += $"Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
+                    message += $"   Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
                 }
             }
             // The order was reversed
             if (state.JustReversedOrder)
             {
-                message += "The order has been reversed\n";
+                message += "The order has been reversed!\n";
             }
             // Waiting for the color to change
             if (state.WaitingOnColorChange)
             {
-                message += $"Waiting for Player {Uno.GetUser(ctx.Guild.Id, state.CurrentPlayer.Id).Username} to choose a color\n";
+                message += $"Waiting for Player {Uno.GetUser(ctx.Guild.Id, state.CurrentPlayer.Id).Username} to choose a color...\n";
             }
             if (state.ColorChanged != null)
             {
                 message += $"Color changed to: {state.ColorChanged}\n";
+                imageURL += state.ColorChanged.ToString().ToLower();
+                imageURL += "%20";
             }
-            if (state.HasSkiped && state.PreviousPlayer != null)
+            if (state is { HasSkipped: true, PreviousPlayer: { } })
             {
                 message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} has skipped their turn\n";
             }
@@ -254,16 +286,72 @@ public class UnoSlashCommands : ApplicationCommandModule
                 message += "Game has ended\n";
             }
         }
+
         if (state.NewTurn)
         {
-            message += $"Your turn now: {Uno.GetUser(ctx.Guild.Id, state.CurrentPlayer.Id).Username}\n";
+
+            fieldTitle += $"Your turn now: {Uno.GetUser(ctx.Guild.Id, state.CurrentPlayer.Id).Username}\n";
+
+            emoji = DiscordEmoji.FromGuildEmote(ctx.Client, 746444081424760943);
+            for (int i = 0; i < state.CurrentPlayer.NumCards; i++)
+                fieldValue += emoji;
+            embedMessage.AddField(fieldTitle, fieldValue, false);
+
+
         }
 
-        message += "---------------";
+        if (state.WaitingOnColorChange)
+            colorHex += "#000000";
+        else
+            switch (state.OnTable.Color)
+            {
+                case CardColors.Red:
+                    colorHex += "#FF5555";
+                    break;
+                case CardColors.Green:
+                    colorHex += "#55AA55";
+                    break;
+                case CardColors.Yellow:
+                    colorHex += "#FFAA00";
+                    break;
+                case CardColors.Blue:
+                    colorHex += "#5555FF";
+                    break;
+                default:
+                    colorHex += "#000000";
+                    break;
+            }
 
-        await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new()
+
+
+        imageURL += CardURL(state.OnTable);
+        await ctx.CreateResponseAsync(embedMessage
+            .WithThumbnail(imageURL)
+            .WithDescription(message)
+            .WithTimestamp(DateTime.Now)
+            .WithColor(new DiscordColor(colorHex))
+            );
+    }
+
+    private static string CardURL(ICard card)
+    {
+        if (card is WildCard wc)
         {
-            Content = message
-        });
+            return "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
+        }
+        else if (card is ColorCard cc)
+        {
+            string message = cc.Color.ToString().ToLower() + "%20";
+
+            if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
+                message += cc.Symbol.ToString().ToLower();
+            else
+                message += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
+            message += ".png";
+
+            return message;
+        }
+
+        return "";
     }
 }

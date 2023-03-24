@@ -1,4 +1,5 @@
-﻿using UNOLib.DrawStyle;
+﻿using UNOLib.Cards;
+using UNOLib.DrawStyle;
 
 namespace UNOLib.StackStyles;
 
@@ -20,7 +21,7 @@ internal abstract class AbstractStackStyle : IStackStyle
     /// <param name="cardsToDraw"></param>
     protected void FinalDraw(ref GameState state, int cardsToDraw)
     {
-        for (int i = 0; i < cardsToDraw; i++)
+        for (var i = 0; i < cardsToDraw; i++)
             state.CurrentPlayer.AddCard(_drawStyle.Draw());
         state.CardsDrawn = cardsToDraw;
         state.WhoDrewCards = state.CurrentPlayer;
@@ -40,6 +41,12 @@ internal abstract class AbstractStackStyle : IStackStyle
         else if (card is ColorCard { Symbol: ColorCardSymbols.PlusTwo }) return PlusTwo;
 
         return 0;
+    }
+
+    public bool ForcedDraw(ref GameState state)
+    {
+        FinalDraw(ref state, state.CardsDrawn);
+        return true;
     }
 
     public abstract bool ForcedDraw(ref GameState state, ICard card);

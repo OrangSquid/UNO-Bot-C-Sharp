@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace UNODiscordBot;
 
-public class Program
+public static class Program
 {
     public static async Task Main()
     {
@@ -19,16 +19,18 @@ public class Program
             Intents = DiscordIntents.AllUnprivileged
         });
 
-        ServiceProvider services = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddSingleton<UnoLibWrapper>()
             .BuildServiceProvider();
 
-        SlashCommandsExtension slash = discord.UseSlashCommands(new SlashCommandsConfiguration()
+        var slash = discord.UseSlashCommands(new SlashCommandsConfiguration()
         {
             Services = services
         });
 
         slash.RegisterCommands<UnoSlashCommands>(556652655397830657);
+        slash.RegisterCommands<UnoSlashCommands>(1088175511320145970);
+
 
         await discord.ConnectAsync();
         await Task.Delay(-1);

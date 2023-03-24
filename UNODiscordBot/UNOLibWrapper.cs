@@ -1,6 +1,8 @@
 ﻿using DSharpPlus.Entities;
+using System.Drawing;
 using UNODiscordBot.Exceptions;
 using UNOLib;
+using UNOLib.Cards;
 
 namespace UNODiscordBot;
 
@@ -57,7 +59,7 @@ public class UnoLibWrapper
             DrawUntilPlayableCard = false,
             StackPlusTwo = true,
             MustPlay = false,
-            JumpIn = true
+            //JumpIn = true
         };
         IGameSystem gs = gsf.Build();
         _guildGames.Add(guildId, new GameStruct()
@@ -108,6 +110,16 @@ public class UnoLibWrapper
         return game.Gs.State;
     }
 
+    public GameState Skip(ulong guildId, DiscordUser player)
+    {
+        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        {
+            throw new GameDoesNotExistException();
+        }
+        game.Gs.Skip(GetPlayerId(game, player));
+        return game.Gs.State;
+    }
+
     public DiscordUser GetUser(ulong guildId, int playerId)
     {
         if (!_guildGames.TryGetValue(guildId, out GameStruct game))
@@ -117,14 +129,25 @@ public class UnoLibWrapper
         return game.Players[playerId];
     }
 
-    public GameState Skip(ulong guildId, DiscordUser player) 
+    public string CardURL(ICard card)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
+        if (card is WildCard wc)
         {
-            throw new GameDoesNotExistException();
+            return "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
         }
-        game.Gs.Skip(GetPlayerId(game, player));
-        return game.Gs.State;
+        else if (card is ColorCard cc) {
+            string message = cc.Color.ToString().ToLower() + "%20";
+
+            if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
+                message += cc.Symbol.ToString().ToLower();
+            else
+                message += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
+            message += ".png";
+
+            return message;
+        }
+
+        return "";
     }
 
     private static int GetPlayerId(GameStruct game, DiscordUser player)
@@ -141,4 +164,6 @@ public class UnoLibWrapper
     {
         return game.Gs.GetPlayer(GetPlayerId(game, player));
     }
+
+    
 }

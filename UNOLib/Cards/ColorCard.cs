@@ -1,4 +1,4 @@
-﻿namespace UNOLib;
+﻿namespace UNOLib.Cards;
 
 /// <summary>
 /// Color Cards
@@ -31,16 +31,16 @@ public class ColorCard : ICard
         return message;
     }
 
-    public string ToURL()
-    {
-        string message = Color.ToString().ToLower() + "%20";
+    //public string ToURL()
+    //{
+    //    string message = Color.ToString().ToLower() + "%20";
 
-        if (Symbol.Equals(ColorCardSymbols.Reverse) || Symbol.Equals(ColorCardSymbols.PlusTwo) || Symbol.Equals(ColorCardSymbols.Skip))
-            message += Symbol.ToString().ToLower();
-        else
-            message += Enum.Format(typeof(ColorCardSymbols), Symbol, "d");
-        message += ".png";
+    //    if (Symbol.Equals(ColorCardSymbols.Reverse) || Symbol.Equals(ColorCardSymbols.PlusTwo) || Symbol.Equals(ColorCardSymbols.Skip))
+    //        message += Symbol.ToString().ToLower();
+    //    else
+    //        message += Enum.Format(typeof(ColorCardSymbols), Symbol, "d");
+    //    message += ".png";
 
-        return message;
-    }
+    //    return message;
+    //}
 }

@@ -75,6 +75,6 @@ public class GameSystemFactory
             stackStyle = new NoStack(drawStyle);
         }
 
-        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle, JumpIn);
+        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle);
     }
 }

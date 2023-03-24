@@ -20,7 +20,7 @@ public class GameSystem : IGameSystem
 
     public GameState State => _state;
 
-    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay, IStackStyle stackStyle, bool jumpIn)
+    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay, IStackStyle stackStyle)
     {
         _playersByOrder = new(nPlayers);
         _allCardsDict = allCardsDict;
@@ -45,7 +45,7 @@ public class GameSystem : IGameSystem
         _state = new GameState(startingCard, _playersByOrder.First(), _playersByOrder.Count);
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;
-        _jumpIn = jumpIn;
+        //_jumpIn = jumpIn;
     }
 
     public void CardPlay(int playerId, string cardId)

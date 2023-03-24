@@ -25,7 +25,7 @@ public record struct GameState
     public bool StackPlusTwo { get; internal set; }
     public bool StackPlusFour { get; internal set; }
     public bool JumpedIn { get; internal set; }
-    
+
 
     private CardColors? _colorChanged;
 

@@ -19,7 +19,7 @@ public class GameSystem : IGameSystem
     private readonly bool _jumpIn;
     private bool _clockwiseOrder;
     private GameState _state;
-    
+
     public GameState State => _state;
 
     internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
@@ -39,12 +39,12 @@ public class GameSystem : IGameSystem
         }
 
         var startingCard = _drawStyle.Draw();
-        while(startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip and ColorCardSymbols.PlusTwo and ColorCardSymbols.Reverse } )
+        while (startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip and ColorCardSymbols.PlusTwo and ColorCardSymbols.Reverse })
         {
             _drawStyle.Push(startingCard);
             startingCard = _drawStyle.Draw();
         }
-        
+
         _state = new GameState(startingCard, _playersByOrder.First(), _playersByOrder.Count);
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;

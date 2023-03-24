@@ -22,7 +22,7 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         // TODO catch proper exceptions
         catch (Exception)
         {
-            return new []
+            return new[]
             {
                 new DiscordAutoCompleteChoice("testing", "testing")
             };

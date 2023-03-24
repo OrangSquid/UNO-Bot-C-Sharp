@@ -15,5 +15,5 @@ public readonly struct Settings
     //public bool NumSevenPlayed { get; }
     //public int NoUNOPenalty { get; }
 
-    public Settings() {}
+    public Settings() { }
 }

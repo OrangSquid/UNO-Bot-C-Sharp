@@ -1,8 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
-using UNOLib.Cards;
-using UNOLib.Player;
 
 namespace UNODiscordBot;
 
@@ -24,7 +22,7 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         // TODO catch proper exceptions
         catch (Exception)
         {
-            return new DiscordAutoCompleteChoice[]
+            return new []
             {
                 new DiscordAutoCompleteChoice("testing", "testing")
             };

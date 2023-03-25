@@ -129,28 +129,6 @@ public class UnoLibWrapper
         return game.Players[playerId];
     }
 
-    public string CardURL(ICard card)
-    {
-        if (card is WildCard wc)
-        {
-            return "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
-        }
-        else if (card is ColorCard cc)
-        {
-            string message = cc.Color.ToString().ToLower() + "%20";
-
-            if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
-                message += cc.Symbol.ToString().ToLower();
-            else
-                message += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
-            message += ".png";
-
-            return message;
-        }
-
-        return "";
-    }
-
     private static int GetPlayerId(GameStruct game, DiscordUser player)
     {
         int playerId = game.Players.IndexOf(player);

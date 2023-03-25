@@ -221,14 +221,14 @@ public class UnoSlashCommands : ApplicationCommandModule
             // Player JumpedIn
             if (state is { JumpedIn: true, PreviousPlayer: { } })
             {
-                author += $"jumped in!";
+                author += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} jumped in!";
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
                 author = "";
             }
             // Played a card
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
-                author += $"played:\n";
+                author += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n";
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
                 {

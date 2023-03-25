@@ -55,7 +55,7 @@ public class GameSystem : IGameSystem
     public void CardPlay(int playerId, string cardId)
     {
         if (_state.GameFinished)
-        { 
+        {
             throw new GameIsFinishedException();
         }
         // Check if card is present in the dictionary for all cards and if card can be played on top of current one
@@ -158,7 +158,7 @@ public class GameSystem : IGameSystem
 
     public void Uno(int playerId)
     {
-        
+
     }
 
     public void ChangeOnTableColor(int playerId, string color)

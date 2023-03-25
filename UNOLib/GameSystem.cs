@@ -156,6 +156,11 @@ public class GameSystem : IGameSystem
         SetNextPlayer();
     }
 
+    public void Uno(int playerId)
+    {
+        
+    }
+
     public void ChangeOnTableColor(int playerId, string color)
     {
         if (_state.GameFinished)

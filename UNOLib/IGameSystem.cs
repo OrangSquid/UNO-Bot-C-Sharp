@@ -46,4 +46,10 @@ public interface IGameSystem : IEnumerable<IPlayer>
     /// </summary>
     /// <param name="playerId"></param>
     public void Skip(int playerId);
+
+    /// <summary>
+    /// Yell Uno. Apply penalty if it is the case.
+    /// </summary>
+    /// <param name="playerId"></param>
+    public void Uno(int playerId);
 }

@@ -10,9 +10,7 @@ namespace UNODiscordBot;
 
 public class UnoSlashCommands : ApplicationCommandModule
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public UnoLibWrapper Uno { private get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+   private UnoLibWrapper Uno { get; set; }
 
     [SlashCommand("new", "Make a new game for people to join")]
     public async Task NewGameCommand(InteractionContext ctx)
@@ -147,6 +145,8 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
     }
 
+
+    //TODO show all players' nº cards and ctx.user deck
     [SlashCommand("check", "Shows your current deck")]
     public async Task CheckCommand(InteractionContext ctx)
     {
@@ -197,6 +197,8 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
     }
 
+
+    //TODO refactor this shi
     private async Task StateInterpreter(bool newGame, GameState state, InteractionContext ctx)
     {
         string message = "";

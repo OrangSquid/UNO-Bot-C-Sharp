@@ -23,4 +23,23 @@
     <ProjectReference Include="..\UNOLib\UNOLib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="UNODiscordEmojis.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UNODiscordEmojis.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="UNODiscordEmojis.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>UNODiscordEmojis.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

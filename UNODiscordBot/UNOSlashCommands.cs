@@ -151,11 +151,30 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
+            string message = "";
             DiscordEmoji emoji;
             List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);
             var checkingPlayer = Uno.CheckCards(ctx.Guild.Id, ctx.User);
-            var message = "Here's your current deck:\n";
 
+
+            UNOMessageBuilder.emojiIds.TryGetValue("BackCard", out ulong id);
+            emoji = DiscordEmoji.FromGuildEmote(ctx.Client, id);
+
+            //Shows how many cards all the players has
+            foreach (DiscordUser user in users)
+            {
+                IPlayer otherPlayer = Uno.CheckCards(ctx.Guild.Id, user);
+                if (otherPlayer.Id != checkingPlayer.Id)
+                {
+                    message += $"{user.Username}: ";
+                    for (int i = 0; i < otherPlayer.NumCards; i++)
+                    {
+                        message += emoji;
+                    }
+                }
+                message += "\n";
+            }
+            message += "Here's your current deck:\n";
             await ctx.CreateResponseAsync(message, true);
             message = "";
 
@@ -165,25 +184,11 @@ public class UnoSlashCommands : ApplicationCommandModule
                 emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault(card.ToString()));
                 message += emoji;
             }
-            await ctx.CreateResponseAsync(message, true);
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(message).AsEphemeral(true));
             message = "";
             
-            UNOMessageBuilder.emojiIds.TryGetValue("BackCard", out ulong id);
-            emoji = DiscordEmoji.FromGuildEmote(ctx.Client, id);
-            //Shows how many cards all the players has
-            foreach (DiscordUser user in users)
-            {
-                IPlayer otherPlayer = Uno.CheckCards(ctx.Guild.Id, ctx.User);
-                if (!otherPlayer.Equals(checkingPlayer))
-                {
-                    message += $"{user.Username}:";
-                    for (int i = 0; i < otherPlayer.NumCards; i++)
-                    {
-                        message += emoji;
-                    }
-                }
-            }
-            
+
+
         }
         catch (GameDoesNotExistException)
         {
@@ -230,7 +235,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         string fieldTitle = "";
         string fieldValue = "";
         string imageURL = "https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/";
-        DiscordEmbedBuilder embedMessage = new DiscordEmbedBuilder();
+        DiscordEmbedBuilder embedMessage = new();
         DiscordEmoji emoji;
 
 
@@ -244,7 +249,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         else
         {
             // Player JumpedIn
-            if (state is { JumpedIn: true, PreviousPlayer: { } })
+            if (state.JumpedIn && state.PreviousPlayer != null)
             {
                 author += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} jumped in!";
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
@@ -262,11 +267,12 @@ public class UnoSlashCommands : ApplicationCommandModule
                     message += card;
                     message += "\n";
                 }
+                message += "\n";
                 message += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} card(s):\n";
                 emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
                 for (int i = 0; i < state.PreviousPlayer.NumCards; i++)
                     message += emoji;
-                message += "\n";
+                message += "\n\n";
                 author = "";
             }
             // Cards were drawn
@@ -289,7 +295,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 message += "These Players were skipped: \n";
                 foreach (IPlayer player in state.PlayersSkipped)
                 {
-                    message += $"   Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
+                    message += $"{Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
                 }
                 message += "\n";
             }
@@ -375,7 +381,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 cardImg += state.ColorChanged.ToString().ToLower();
                 cardImg += "%20";
             }
-            return "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
+            return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
         }
         else if (card is ColorCard cc)
         {

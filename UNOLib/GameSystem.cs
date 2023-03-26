@@ -25,10 +25,10 @@ public class GameSystem : IGameSystem
     internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
         IStackStyle stackStyle, bool jumpIn)
     {
-        _playersByOrder = new(nPlayers);
+        _playersByOrder = playersByOrder;
         _allCardsDict = allCardsDict;
         _drawStyle = drawStyle;
-        for (var i = 0; i < nPlayers; i++)
+        foreach (var player in playersByOrder)
         {
             IPlayer player = new Player.Player(i);
             _playersByOrder.Add(player);
@@ -192,12 +192,12 @@ public class GameSystem : IGameSystem
     /// <param name="card">Card that was played</param>
     private void CardAction(ICard card)
     {
-        if (card is WildCard)
+        switch (card)
         {
+            case WildCard:
             _state.WaitingOnColorChange = true;
-        }
-        else if (card is ColorCard colorCard)
-        {
+                break;
+            case ColorCard colorCard:
             switch (colorCard.Symbol)
             {
                 case ColorCardSymbols.Skip: //Skips the next player
@@ -218,10 +218,9 @@ public class GameSystem : IGameSystem
                     }
                     // DO NOT SET UP NEXT PLAYER
                     return;
-                default:
-                    break;
             }
             SetNextPlayer();
+                break;
         }
     }
 

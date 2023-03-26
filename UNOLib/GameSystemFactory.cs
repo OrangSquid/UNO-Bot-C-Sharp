@@ -13,7 +13,7 @@ public class GameSystemFactory
 
     private static readonly Dictionary<string, ICard> AllCardsDict;
     private static readonly List<ICard> AllCards;
-    private readonly int _nPlayers;
+    protected readonly List<IPlayer> _playersByOrder;
 
     public required bool DrawUntilPlayableCard { get; init; }
     public required bool StackPlusTwo { get; init; }
@@ -22,8 +22,8 @@ public class GameSystemFactory
 
     static GameSystemFactory()
     {
-        AllCardsDict = new(NumberCards);
-        AllCards = new(NumberCards);
+        AllCardsDict = new Dictionary<string, ICard>(NumberCards);
+        AllCards = new List<ICard>(NumberCards);
         foreach (CardColors color in Enum.GetValuesAsUnderlyingType<CardColors>())
         {
             foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
@@ -57,7 +57,15 @@ public class GameSystemFactory
 
     public GameSystemFactory(int nPlayers)
     {
-        _nPlayers = nPlayers;
+        _playersByOrder = new List<IPlayer>(nPlayers);
+    }
+
+    public void CreatePlayers()
+    {
+        for (var i = 0; i < _playersByOrder.Capacity; i++)
+        {
+            _playersByOrder.Add(new BasePlayer(i));
+        }
     }
 
     public IGameSystem Build()
@@ -82,6 +90,6 @@ public class GameSystemFactory
             stackStyle = new NoStack(drawStyle);
         }
 
-        return new GameSystem(_nPlayers, AllCardsDict, drawStyle, MustPlay, stackStyle, JumpIn);
+        return new GameSystem(_playersByOrder, AllCardsDict, drawStyle, MustPlay, stackStyle, JumpIn, UnoPenalty);
     }
 }

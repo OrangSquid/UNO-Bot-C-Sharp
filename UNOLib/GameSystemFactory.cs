@@ -1,5 +1,6 @@
 ﻿using UNOLib.Cards;
 using UNOLib.DrawStyle;
+using UNOLib.Player;
 using UNOLib.StackStyles;
 
 namespace UNOLib;
@@ -13,12 +14,13 @@ public class GameSystemFactory
 
     private static readonly Dictionary<string, ICard> AllCardsDict;
     private static readonly List<ICard> AllCards;
-    protected readonly List<IPlayer> _playersByOrder;
+    protected readonly List<IPlayer> PlayersByOrder;
 
     public required bool DrawUntilPlayableCard { get; init; }
     public required bool StackPlusTwo { get; init; }
     public required bool MustPlay { get; init; }
     public required bool JumpIn { get; init; }
+    public required int UnoPenalty { get; init; }
 
     static GameSystemFactory()
     {
@@ -54,17 +56,17 @@ public class GameSystemFactory
             }
         }
     }
-
+    
     public GameSystemFactory(int nPlayers)
     {
-        _playersByOrder = new List<IPlayer>(nPlayers);
+        PlayersByOrder = new List<IPlayer>(nPlayers);
     }
 
     public void CreatePlayers()
     {
-        for (var i = 0; i < _playersByOrder.Capacity; i++)
+        for (var i = 0; i < PlayersByOrder.Capacity; i++)
         {
-            _playersByOrder.Add(new BasePlayer(i));
+            PlayersByOrder.Add(new BasePlayer(i));
         }
     }
 
@@ -90,6 +92,6 @@ public class GameSystemFactory
             stackStyle = new NoStack(drawStyle);
         }
 
-        return new GameSystem(_playersByOrder, AllCardsDict, drawStyle, MustPlay, stackStyle, JumpIn, UnoPenalty);
+        return new GameSystem(PlayersByOrder, AllCardsDict, drawStyle, MustPlay, stackStyle, JumpIn, UnoPenalty);
     }
 }

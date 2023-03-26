@@ -35,6 +35,7 @@ public interface IPlayer : IEnumerable<ICard>
     /// Remove from the player deck the card with the same cardId
     /// </summary>
     /// <param name="cardId">the cardId of the card to be removed</param>
+    /// <returns>true if the card removed is the penultimate, false otherwise</returns>
     /// <exception cref="PlayerDoesNotHaveCardException"></exception>
-    internal void RemoveCard(string cardId);
+    internal bool RemoveCard(string cardId);
 }

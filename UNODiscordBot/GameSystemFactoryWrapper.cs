@@ -9,14 +9,14 @@ internal class GameSystemFactoryWrapper : GameSystemFactory
 
     public void CreatePlayers(List<DiscordUser> discordUsers)
     {
-        if (discordUsers.Count != _playersByOrder.Count)
+        if (discordUsers.Count != PlayersByOrder.Count)
         {
             throw new ArgumentException("discordUsers should have the same number of elements as nPlayers");
         }
 
         for (var i = 0; i < discordUsers.Count; i++)
         {
-            _playersByOrder.Add(new DiscordPlayer(i, discordUsers[i]));
+            PlayersByOrder.Add(new DiscordPlayer(i, discordUsers[i]));
         }
     }
 }

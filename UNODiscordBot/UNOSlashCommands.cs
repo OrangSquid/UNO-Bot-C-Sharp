@@ -10,7 +10,7 @@ namespace UNODiscordBot;
 
 public class UnoSlashCommands : ApplicationCommandModule
 {
-   private UnoLibWrapper Uno { get; set; }
+    public UnoLibWrapper Uno { get; set; }
 
     [SlashCommand("new", "Make a new game for people to join")]
     public async Task NewGameCommand(InteractionContext ctx)

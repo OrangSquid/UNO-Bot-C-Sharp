@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using UNODiscordBot.Exceptions;
 using UNOLib;
-using UNOLib.Cards;
 using UNOLib.Player;
 
 namespace UNODiscordBot;
@@ -87,6 +86,10 @@ public class UnoLibWrapper
             throw new GameDoesNotExistException();
         }
         game.Gs.CardPlay(GetPlayerId(game, player), card);
+
+        if(game.Gs.State.GameFinished)
+            _guildGames.Remove(guildId);
+
         return game.Gs.State;
     }
 
@@ -129,7 +132,7 @@ public class UnoLibWrapper
         return game.Players[playerId];
     }
 
-    private static int GetPlayerId(GameStruct game, DiscordUser player)
+    internal int GetPlayerId(GameStruct game, DiscordUser player)
     {
         int playerId = game.Players.IndexOf(player);
         if (playerId == -1)
@@ -139,9 +142,19 @@ public class UnoLibWrapper
         return playerId;
     }
 
-    private static IPlayer GetPlayer(GameStruct game, DiscordUser player)
+    internal IPlayer GetPlayer(GameStruct game, DiscordUser player)
     {
         return game.Gs.GetPlayer(GetPlayerId(game, player));
+    }
+
+    internal List<DiscordUser> GetDiscordUsers(ulong guildId)
+    {
+        if (!_guildGames.TryGetValue(guildId, out var game))
+        {
+            throw new GameDoesNotExistException();
+        }
+
+        return game.Players;
     }
 
 

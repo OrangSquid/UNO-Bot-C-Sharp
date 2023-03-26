@@ -24,10 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="UNODiscordEmojis.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

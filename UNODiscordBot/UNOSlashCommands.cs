@@ -146,21 +146,44 @@ public class UnoSlashCommands : ApplicationCommandModule
     }
 
 
-    //TODO show all players' nº cards and ctx.user deck
     [SlashCommand("check", "Shows your current deck")]
     public async Task CheckCommand(InteractionContext ctx)
     {
         try
         {
-            var player = Uno.CheckCards(ctx.Guild.Id, ctx.User);
+            DiscordEmoji emoji;
+            List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);
+            var checkingPlayer = Uno.CheckCards(ctx.Guild.Id, ctx.User);
             var message = "Here's your current deck:\n";
-            foreach (var card in player)
-            {
 
-                message += card.ToString();
-                message += "\n";
+            await ctx.CreateResponseAsync(message, true);
+            message = "";
+
+            //Shows the ctx.user deck
+            foreach (var card in checkingPlayer)
+            {
+                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault(card.ToString()));
+                message += emoji;
             }
             await ctx.CreateResponseAsync(message, true);
+            message = "";
+            
+            UNOMessageBuilder.emojiIds.TryGetValue("BackCard", out ulong id);
+            emoji = DiscordEmoji.FromGuildEmote(ctx.Client, id);
+            //Shows how many cards all the players has
+            foreach (DiscordUser user in users)
+            {
+                IPlayer otherPlayer = Uno.CheckCards(ctx.Guild.Id, ctx.User);
+                if (!otherPlayer.Equals(checkingPlayer))
+                {
+                    message += $"{user.Username}:";
+                    for (int i = 0; i < otherPlayer.NumCards; i++)
+                    {
+                        message += emoji;
+                    }
+                }
+            }
+            
         }
         catch (GameDoesNotExistException)
         {
@@ -230,13 +253,19 @@ public class UnoSlashCommands : ApplicationCommandModule
             // Played a card
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
-                author += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n";
+                if(!state.JumpedIn)
+                    author += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n";
+                
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
                 {
                     message += card;
                     message += "\n";
                 }
+                message += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} card(s):\n";
+                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
+                for (int i = 0; i < state.PreviousPlayer.NumCards; i++)
+                    message += emoji;
                 message += "\n";
                 author = "";
             }
@@ -247,7 +276,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
 
                 fieldTitle += $"{Uno.GetUser(ctx.Guild.Id, state.WhoDrewCards.Id).Username}'s card(s):\n";
-                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, 746444081424760943);
+                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
                 for (int i = 0; i < state.WhoDrewCards.NumCards; i++)
                     fieldValue += emoji;
                 embedMessage.AddField(fieldTitle, fieldValue, false);
@@ -262,6 +291,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 {
                     message += $"   Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
                 }
+                message += "\n";
             }
             // The order was reversed
             if (state.JustReversedOrder)
@@ -276,8 +306,6 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.ColorChanged != null)
             {
                 message += $"Color changed to: {state.ColorChanged}\n";
-                imageURL += state.ColorChanged.ToString().ToLower();
-                imageURL += "%20";
             }
             if (state is { HasSkipped: true, PreviousPlayer: { } })
             {
@@ -326,7 +354,7 @@ public class UnoSlashCommands : ApplicationCommandModule
 
 
 
-        imageURL += CardURL(state.OnTable);
+        imageURL += CardURL(state);
         await ctx.CreateResponseAsync(embedMessage
             .WithThumbnail(imageURL)
             .WithDescription(message)
@@ -335,23 +363,31 @@ public class UnoSlashCommands : ApplicationCommandModule
             );
     }
 
-    private static string CardURL(ICard card)
+    private static string CardURL(GameState state)
     {
+        ICard card = state.OnTable;
+        string cardImg = "";
+
         if (card is WildCard wc)
         {
+            if (!state.WaitingOnColorChange)
+            {
+                cardImg += state.ColorChanged.ToString().ToLower();
+                cardImg += "%20";
+            }
             return "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
         }
         else if (card is ColorCard cc)
         {
-            string message = cc.Color.ToString().ToLower() + "%20";
+            cardImg += cc.Color.ToString().ToLower() + "%20";
 
             if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
-                message += cc.Symbol.ToString().ToLower();
+                cardImg += cc.Symbol.ToString().ToLower();
             else
-                message += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
-            message += ".png";
+                cardImg += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
+            cardImg += ".png";
 
-            return message;
+            return cardImg;
         }
 
         return "";

@@ -8,9 +8,14 @@ using UNOLib.Player;
 
 namespace UNODiscordBot;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class UnoSlashCommands : ApplicationCommandModule
 {
+    // ReSharper disable once MemberCanBePrivate.Global
+#pragma warning disable CS8618
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public UnoLibWrapper Uno { get; set; }
+#pragma warning restore CS8618
 
     [SlashCommand("new", "Make a new game for people to join")]
     public async Task NewGameCommand(InteractionContext ctx)

@@ -42,6 +42,9 @@ public static class Program
             case "skip":
                 Skip();
                 break;
+            case "uno":
+                Uno();
+                break;
             default:
                 Console.WriteLine("No such command");
                 break;
@@ -66,8 +69,8 @@ public static class Program
         //bool numZeroPlayed = Convert.ToBoolean(Console.ReadLine());
         //Console.WriteLine("numSevenPlayed");
         //bool numSevenPlayed = Convert.ToBoolean(Console.ReadLine());
-        //Console.WriteLine("noUNOPenalty");
-        //int noUNOPenalty = Convert.ToInt32(Console.ReadLine());
+        Console.WriteLine("UNOPenalty");
+        var unoPenalty = Convert.ToInt32(Console.ReadLine());
 
         Console.WriteLine("numPlayers");
         var nPlayers = Convert.ToInt32(Console.ReadLine());
@@ -76,8 +79,10 @@ public static class Program
             DrawUntilPlayableCard = drawUntilPlayableCard,
             StackPlusTwo = stackPlusTwo,
             MustPlay = mustPlay,
-            JumpIn = jumpIn
+            JumpIn = jumpIn,
+            UnoPenalty = unoPenalty
         };
+        gsf.CreatePlayers();
         _uno = gsf.Build();
 
         Console.WriteLine("Game created");
@@ -225,6 +230,29 @@ public static class Program
         }
     }
 
+    private static void Uno()
+    {
+        if (_uno is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var playerId = Convert.ToInt32(Console.ReadLine());
+            _uno.Uno(playerId);
+            StateInterpreter(false);
+        }
+        catch (GameIsFinishedException)
+        {
+            Console.WriteLine("Games has finished");
+        }
+        catch (NobodyHasOnlyOneCardException)
+        {
+            Console.WriteLine("Nobody has only one card");
+        }
+    }
+
     private static void StateInterpreter(bool newGame)
     {
         if (_uno is null)
@@ -250,6 +278,10 @@ public static class Program
                     Console.WriteLine(card);
                 }
 
+            }
+            if (_uno.State.YelledUno != null)
+            {
+                Console.WriteLine("Player {0} yelled Uno", _uno.State.YelledUno);
             }
             // Cards were drawn
             if (_uno.State.WhoDrewCards != null)

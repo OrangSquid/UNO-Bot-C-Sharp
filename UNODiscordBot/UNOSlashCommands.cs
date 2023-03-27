@@ -1,4 +1,4 @@
-﻿using DSharpPlus.Entities;
+using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using UNODiscordBot.Exceptions;
 using UNOLib;
@@ -8,9 +8,14 @@ using UNOLib.Player;
 
 namespace UNODiscordBot;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class UnoSlashCommands : ApplicationCommandModule
 {
+    // ReSharper disable once MemberCanBePrivate.Global
+#pragma warning disable CS8618
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public UnoLibWrapper Uno { get; set; }
+#pragma warning restore CS8618
 
     [SlashCommand("new", "Make a new game for people to join")]
     public async Task NewGameCommand(InteractionContext ctx)
@@ -251,7 +256,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             // Player JumpedIn
             if (state.JumpedIn && state.PreviousPlayer != null)
             {
-                author += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} jumped in!";
+                author += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} jumped in!";
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
                 author = "";
             }
@@ -259,7 +264,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
                 if(!state.JumpedIn)
-                    author += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} played:\n";
+                    author += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n";
                 
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
@@ -268,7 +273,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                     message += "\n";
                 }
                 message += "\n";
-                message += $"{Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} card(s):\n";
+                message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} card(s):\n";
                 emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
                 for (int i = 0; i < state.PreviousPlayer.NumCards; i++)
                     message += emoji;
@@ -281,7 +286,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 author += $"drew {state.CardsDrawn} card(s)\n";
                 embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
 
-                fieldTitle += $"{Uno.GetUser(ctx.Guild.Id, state.WhoDrewCards.Id).Username}'s card(s):\n";
+                fieldTitle += $"{((DiscordPlayer)state.WhoDrewCards).User.Username}'s card(s):\n";
                 emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
                 for (int i = 0; i < state.WhoDrewCards.NumCards; i++)
                     fieldValue += emoji;
@@ -295,7 +300,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 message += "These Players were skipped: \n";
                 foreach (IPlayer player in state.PlayersSkipped)
                 {
-                    message += $"{Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
+                    message += $"   Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
                 }
                 message += "\n";
             }
@@ -307,7 +312,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             // Waiting for the color to change
             if (state.WaitingOnColorChange)
             {
-                message += $"Waiting for Player {Uno.GetUser(ctx.Guild.Id, state.CurrentPlayer.Id).Username} to choose a color...\n";
+                message += $"Waiting for Player {((DiscordPlayer)state.CurrentPlayer).User.Username} to choose a color...\n";
             }
             if (state.ColorChanged != null)
             {
@@ -315,7 +320,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             }
             if (state is { HasSkipped: true, PreviousPlayer: { } })
             {
-                message += $"Player {Uno.GetUser(ctx.Guild.Id, state.PreviousPlayer.Id).Username} has skipped their turn\n";
+                message += $"Player {((DiscordPlayer)state.PreviousPlayer).User.Username} has skipped their turn\n";
             }
             if (state.GameFinished)
             {
@@ -326,10 +331,10 @@ public class UnoSlashCommands : ApplicationCommandModule
         if (state.NewTurn)
         {
 
-            fieldTitle += $"Your turn now: {Uno.GetUser(ctx.Guild.Id, state.CurrentPlayer.Id).Username}\n";
+            fieldTitle += $"Your turn now: {((DiscordPlayer)state.CurrentPlayer).User.Username}\n";
 
             emoji = DiscordEmoji.FromGuildEmote(ctx.Client, 746444081424760943);
-            for (int i = 0; i < state.CurrentPlayer.NumCards; i++)
+            for (var i = 0; i < state.CurrentPlayer.NumCards; i++)
                 fieldValue += emoji;
             embedMessage.AddField(fieldTitle, fieldValue, false);
 

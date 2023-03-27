@@ -25,6 +25,8 @@ public record struct GameState
     public bool StackPlusTwo { get; internal set; }
     public bool StackPlusFour { get; internal set; }
     public bool JumpedIn { get; internal set; }
+    public IPlayer? WaitingOnUno { get; internal set; }
+    public IPlayer? YelledUno { get; internal set; }
 
 
     private CardColors? _colorChanged;
@@ -34,8 +36,8 @@ public record struct GameState
         OnTable = onTable;
         CurrentPlayer = currentPlayer;
         WaitingOnColorChange = false;
-        PlayersSkipped = new(nPlayers);
-        CardsPlayed = new();
+        PlayersSkipped = new List<IPlayer>(nPlayers);
+        CardsPlayed = new LinkedList<ICard>();
         Refresh();
         NewTurn = true;
         GameFinished = false;
@@ -63,5 +65,7 @@ public record struct GameState
         StackPlusFour = false;
         StackPlusTwo = false;
         JumpedIn = false;
+        WaitingOnUno = null;
+        YelledUno = null;
     }
 }

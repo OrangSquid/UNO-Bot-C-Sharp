@@ -17,21 +17,21 @@ public class GameSystem : IGameSystem
     private readonly IStackStyle _stackStyle;
     private readonly bool _mustPlay;
     private readonly bool _jumpIn;
+    private readonly int _unoPenalty;
     private bool _clockwiseOrder;
     private GameState _state;
 
     public GameState State => _state;
 
-    internal GameSystem(int nPlayers, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
-        IStackStyle stackStyle, bool jumpIn)
+    // TODO make this a guided builder
+    internal GameSystem(List<IPlayer> playersByOrder, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
+        IStackStyle stackStyle, bool jumpIn, int unoPenalty)
     {
-        _playersByOrder = new(nPlayers);
+        _playersByOrder = playersByOrder;
         _allCardsDict = allCardsDict;
         _drawStyle = drawStyle;
-        for (var i = 0; i < nPlayers; i++)
+        foreach (var player in playersByOrder)
         {
-            IPlayer player = new Player.Player(i);
-            _playersByOrder.Add(player);
             for (var j = 0; j < CardsPerPlayer; j++)
             {
                 player.AddCard(_drawStyle.Draw());
@@ -49,15 +49,14 @@ public class GameSystem : IGameSystem
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;
         _jumpIn = jumpIn;
+        _unoPenalty = unoPenalty;
         _clockwiseOrder = true;
     }
 
     public void CardPlay(int playerId, string cardId)
     {
-        if (_state.GameFinished)
-        { 
-            throw new GameIsFinishedException();
-        }
+        GuardClauses.GuardAgainstFinishedGame(_state);
+
         // Check if card is present in the dictionary for all cards and if card can be played on top of current one
         if (!_allCardsDict.TryGetValue(cardId, out var cardToBePlayed))
         {
@@ -80,8 +79,12 @@ public class GameSystem : IGameSystem
             _state.CurrentPlayer = GetPlayer(playerId);
             _state.JumpedIn = true;
         }
-        _state.CurrentPlayer.RemoveCard(cardId);
         _state.Refresh();
+        // Set waiting on UNO once a player has only 1 card in hand
+        if (_state.CurrentPlayer.RemoveCard(cardId))
+        {
+            _state.WaitingOnUno = _state.CurrentPlayer;
+        }
         _state.PreviousPlayer = _state.CurrentPlayer;
         _drawStyle.Push(_state.OnTable);
         _state.OnTable = cardToBePlayed;
@@ -103,10 +106,8 @@ public class GameSystem : IGameSystem
 
     public void DrawCard(int playerId)
     {
-        if (_state.GameFinished)
-        {
-            throw new GameIsFinishedException();
-        }
+        GuardClauses.GuardAgainstFinishedGame(_state);
+
         if (playerId != _state.CurrentPlayer.Id)
         {
             throw new NotPlayersTurnException();
@@ -138,10 +139,8 @@ public class GameSystem : IGameSystem
 
     public void Skip(int playerId)
     {
-        if (_state.GameFinished)
-        {
-            throw new GameIsFinishedException();
-        }
+        GuardClauses.GuardAgainstFinishedGame(_state);
+
         if (playerId != _state.CurrentPlayer.Id)
         {
             throw new NotPlayersTurnException();
@@ -158,15 +157,29 @@ public class GameSystem : IGameSystem
 
     public void Uno(int playerId)
     {
-        
+        if (_state.WaitingOnUno == null)
+        {
+            throw new NobodyHasOnlyOneCardException();
+        }
+        var waitingOnUno = _state.WaitingOnUno;
+        _state.Refresh();
+        _state.YelledUno = GetPlayer(playerId);
+        if (!ReferenceEquals(waitingOnUno, _state.YelledUno))
+        {
+            for (var j = 0; j < _unoPenalty; j++)
+            {
+                waitingOnUno.AddCard(_drawStyle.Draw());
+            }
+            _state.WhoDrewCards = waitingOnUno;
+            _state.CardsDrawn = _unoPenalty;
+        }
+        _state.NewTurn = true;
     }
 
     public void ChangeOnTableColor(int playerId, string color)
     {
-        if (_state.GameFinished)
-        {
-            throw new GameIsFinishedException();
-        }
+        GuardClauses.GuardAgainstFinishedGame(_state);
+
         if (!_state.WaitingOnColorChange || _state.OnTable is not WildCard wildCard)
         {
             throw new CannotChangeColorException();
@@ -192,36 +205,35 @@ public class GameSystem : IGameSystem
     /// <param name="card">Card that was played</param>
     private void CardAction(ICard card)
     {
-        if (card is WildCard)
+        switch (card)
         {
-            _state.WaitingOnColorChange = true;
-        }
-        else if (card is ColorCard colorCard)
-        {
-            switch (colorCard.Symbol)
-            {
-                case ColorCardSymbols.Skip: //Skips the next player
-                    SkipPlayer();
-                    break;
-                case ColorCardSymbols.Reverse: //Reverses the order of players in the next round
-                    ReverseOrder();
-                    if (_playersByOrder.Count == 2)
-                        SelectNextPlayer();
-                    break;
-                case ColorCardSymbols.PlusTwo: //Next player has to draw 2 cards
-                    // Sets up the next player for the forced draw
-                    SetNextPlayer();
-                    if (_stackStyle.ForcedDraw(ref _state, colorCard))
-                    {
-                        _state.PlayersSkipped.Add(_state.CurrentPlayer);
+            case WildCard:
+                _state.WaitingOnColorChange = true;
+                break;
+            case ColorCard colorCard:
+                switch (colorCard.Symbol)
+                {
+                    case ColorCardSymbols.Skip: //Skips the next player
+                        SkipPlayer();
+                        break;
+                    case ColorCardSymbols.Reverse: //Reverses the order of players in the next round
+                        ReverseOrder();
+                        if (_playersByOrder.Count == 2)
+                            SelectNextPlayer();
+                        break;
+                    case ColorCardSymbols.PlusTwo: //Next player has to draw 2 cards
+                        // Sets up the next player for the forced draw
                         SetNextPlayer();
-                    }
-                    // DO NOT SET UP NEXT PLAYER
-                    return;
-                default:
-                    break;
-            }
-            SetNextPlayer();
+                        if (_stackStyle.ForcedDraw(ref _state, colorCard))
+                        {
+                            _state.PlayersSkipped.Add(_state.CurrentPlayer);
+                            SetNextPlayer();
+                        }
+                        // DO NOT SET UP NEXT PLAYER
+                        return;
+                }
+                SetNextPlayer();
+                break;
         }
     }
 

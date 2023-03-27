@@ -58,7 +58,8 @@ public class UnoLibWrapper
             DrawUntilPlayableCard = false,
             StackPlusTwo = true,
             MustPlay = false,
-            JumpIn = true
+            JumpIn = true,
+            UnoPenalty = 2
         };
         var gs = gsf.Build();
         _guildGames.Add(guildId, new GameStruct()
@@ -156,6 +157,4 @@ public class UnoLibWrapper
 
         return game.Players;
     }
-
-
 }

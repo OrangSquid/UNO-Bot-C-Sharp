@@ -191,7 +191,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             }
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(message).AsEphemeral(true));
             message = "";
-            
+
 
 
         }
@@ -235,7 +235,8 @@ public class UnoSlashCommands : ApplicationCommandModule
     private async Task StateInterpreter(bool newGame, GameState state, InteractionContext ctx)
     {
         string message = "";
-        string author = "";
+        string authorTitle = "";
+        string authorImgURL = "";
         string colorHex = "";
         string fieldTitle = "";
         string fieldValue = "";
@@ -253,20 +254,19 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         else
         {
+            authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username}'s turn";
             // Player JumpedIn
             if (state.JumpedIn && state.PreviousPlayer != null)
             {
-                author += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} jumped in!";
-                embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
-                author = "";
+                authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username} jumped in!";
             }
             // Played a card
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
                 if(!state.JumpedIn)
-                    author += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n";
+                    authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n";
                 
-                embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
+                embedMessage.WithAuthor(authorTitle, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
                 {
                     message += card;
@@ -278,13 +278,21 @@ public class UnoSlashCommands : ApplicationCommandModule
                 for (int i = 0; i < state.PreviousPlayer.NumCards; i++)
                     message += emoji;
                 message += "\n\n";
-                author = "";
+                authorTitle = "";
             }
             // Cards were drawn
             if (state.WhoDrewCards != null)
             {
-                author += $"drew {state.CardsDrawn} card(s)\n";
-                embedMessage.WithAuthor(author, null, ctx.User.AvatarUrl);
+                authorTitle = $"drew {state.CardsDrawn} card(s)\n";
+                authorImgURL += ctx.User.AvatarUrl;
+                if ((state.OnTable is WildCard wc && wc.Symbol.Equals(WildCardSymbols.PlusFour)) || (state.OnTable is ColorCard cc && cc.Symbol.Equals(ColorCardSymbols.PlusTwo))) //TODO finish messages and change the authorTitle and URL when it's a 2+ or 4+ card
+                {
+
+                    List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);
+                    DiscordUser previousUser = users.Find(user => users.IndexOf(user) == state.PreviousPlayer.Id);
+                    authorImgURL = previousUser.AvatarUrl;
+                }
+                embedMessage.WithAuthor(authorTitle, null, authorImgURL);
 
                 fieldTitle += $"{((DiscordPlayer)state.WhoDrewCards).User.Username}'s card(s):\n";
                 emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
@@ -300,7 +308,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 message += "These Players were skipped: \n";
                 foreach (IPlayer player in state.PlayersSkipped)
                 {
-                    message += $"   Player {Uno.GetUser(ctx.Guild.Id, player.Id).Username}\n";
+                    message += $"   Player {((DiscordPlayer)player).User.Username}\n";
                 }
                 message += "\n";
             }

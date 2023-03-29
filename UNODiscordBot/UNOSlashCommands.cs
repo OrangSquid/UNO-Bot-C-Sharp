@@ -175,9 +175,9 @@ public class UnoSlashCommands : ApplicationCommandModule
                     for (int i = 0; i < otherPlayer.NumCards; i++)
                     {
                         message += emoji;
+                        message += "\n";
                     }
                 }
-                message += "\n";
             }
             message += "Here's your current deck:\n";
             await ctx.CreateResponseAsync(message, true);
@@ -264,7 +264,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
                 if(!state.JumpedIn)
-                    authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n";
+                    message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n";
                 
                 embedMessage.WithAuthor(authorTitle, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
@@ -289,8 +289,8 @@ public class UnoSlashCommands : ApplicationCommandModule
                 {
 
                     List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);
-                    DiscordUser previousUser = users.Find(user => users.IndexOf(user) == state.PreviousPlayer.Id);
-                    authorImgURL = previousUser.AvatarUrl;
+                    DiscordUser whoDrewCards = users.Find(user => users.IndexOf(user) == state.WhoDrewCards.Id);
+                    authorImgURL = whoDrewCards.AvatarUrl;
                 }
                 embedMessage.WithAuthor(authorTitle, null, authorImgURL);
 

@@ -1,7 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using UNOLib.Player;
 
-namespace UNODiscordBot;
+namespace UNODiscordBot.Wrappers;
 
 internal class DiscordPlayer : BasePlayer
 {

@@ -3,7 +3,7 @@ using UNODiscordBot.Exceptions;
 using UNOLib;
 using UNOLib.Player;
 
-namespace UNODiscordBot;
+namespace UNODiscordBot.Wrappers;
 
 public class UnoLibWrapper
 {
@@ -12,8 +12,8 @@ public class UnoLibWrapper
 
     public UnoLibWrapper()
     {
-        _guildLobbies = new();
-        _guildGames = new();
+        _guildLobbies = new Dictionary<ulong, List<DiscordUser>>();
+        _guildGames = new Dictionary<ulong, GameStruct>();
     }
 
     public void CreateGame(ulong guildId, DiscordUser user)
@@ -31,7 +31,7 @@ public class UnoLibWrapper
 
     public void JoinGame(ulong guildId, DiscordUser user)
     {
-        if (!_guildLobbies.TryGetValue(guildId, out List<DiscordUser>? lobby))
+        if (!_guildLobbies.TryGetValue(guildId, out var lobby))
         {
             throw new GameDoesNotExistException();
         }
@@ -48,7 +48,7 @@ public class UnoLibWrapper
         {
             throw new GameAlreadyStartedException();
         }
-        if (!_guildLobbies.TryGetValue(guildId, out List<DiscordUser>? lobby))
+        if (!_guildLobbies.TryGetValue(guildId, out var lobby))
         {
             throw new GameDoesNotExistException();
         }
@@ -72,24 +72,18 @@ public class UnoLibWrapper
         return gs.State;
     }
 
-    public IPlayer CheckCards(ulong guildId, DiscordUser player)
+    public IPlayer GetPlayer(ulong guildId, DiscordUser player)
     {
-        if (!_guildGames.TryGetValue(guildId, out var game))
-        {
-            throw new GameDoesNotExistException();
-        }
+        var game = GetGame(guildId);
         return GetPlayer(game, player);
     }
 
     public GameState PlayCard(ulong guildId, DiscordUser player, string card)
     {
-        if (!_guildGames.TryGetValue(guildId, out var game))
-        {
-            throw new GameDoesNotExistException();
-        }
+        var game = GetGame(guildId);
         game.Gs.CardPlay(GetPlayerId(game, player), card);
 
-        if(game.Gs.State.GameFinished)
+        if (game.Gs.State.GameFinished)
             _guildGames.Remove(guildId);
 
         return game.Gs.State;
@@ -97,35 +91,26 @@ public class UnoLibWrapper
 
     public GameState DrawCard(ulong guildId, DiscordUser player)
     {
-        if (!_guildGames.TryGetValue(guildId, out var game))
-        {
-            throw new GameDoesNotExistException();
-        }
+        var game = GetGame(guildId);
         game.Gs.DrawCard(GetPlayerId(game, player));
         return game.Gs.State;
     }
 
     public GameState ChangeColor(ulong guildId, DiscordUser player, string color)
     {
-        if (!_guildGames.TryGetValue(guildId, out var game))
-        {
-            throw new GameDoesNotExistException();
-        }
+        var game = GetGame(guildId);
         game.Gs.ChangeOnTableColor(GetPlayerId(game, player), color);
         return game.Gs.State;
     }
 
     public GameState Skip(ulong guildId, DiscordUser player)
     {
-        if (!_guildGames.TryGetValue(guildId, out GameStruct game))
-        {
-            throw new GameDoesNotExistException();
-        }
+        var game = GetGame(guildId);
         game.Gs.Skip(GetPlayerId(game, player));
         return game.Gs.State;
     }
 
-    internal int GetPlayerId(GameStruct game, DiscordUser player)
+    private int GetPlayerId(GameStruct game, DiscordUser player)
     {
         int playerId = game.Players.IndexOf(player);
         if (playerId == -1)
@@ -135,18 +120,23 @@ public class UnoLibWrapper
         return playerId;
     }
 
-    internal IPlayer GetPlayer(GameStruct game, DiscordUser player)
+    private IPlayer GetPlayer(GameStruct game, DiscordUser player)
     {
         return game.Gs.GetPlayer(GetPlayerId(game, player));
     }
 
     internal List<DiscordUser> GetDiscordUsers(ulong guildId)
     {
+        var game = GetGame(guildId);
+        return game.Players;
+    }
+
+    private GameStruct GetGame(ulong guildId)
+    {
         if (!_guildGames.TryGetValue(guildId, out var game))
         {
             throw new GameDoesNotExistException();
         }
-
-        return game.Players;
+        return game;
     }
 }

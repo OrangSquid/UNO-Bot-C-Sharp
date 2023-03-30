@@ -1,7 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using UNOLib;
 
-namespace UNODiscordBot;
+namespace UNODiscordBot.Wrappers;
 
 internal class GameSystemFactoryWrapper : GameSystemFactory
 {

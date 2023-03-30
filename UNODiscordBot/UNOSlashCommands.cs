@@ -1,6 +1,8 @@
+using System.Text;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using UNODiscordBot.Exceptions;
+using UNODiscordBot.Wrappers;
 using UNOLib;
 using UNOLib.Cards;
 using UNOLib.Exceptions;
@@ -11,10 +13,13 @@ namespace UNODiscordBot;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class UnoSlashCommands : ApplicationCommandModule
 {
-    // ReSharper disable once MemberCanBePrivate.Global
 #pragma warning disable CS8618
+    // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public UnoLibWrapper Uno { get; set; }
+    // ReSharper disable once MemberCanBePrivate.Global
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public UnoMessageBuilder MessageBuilder { get; set; }
 #pragma warning restore CS8618
 
     [SlashCommand("new", "Make a new game for people to join")]
@@ -150,50 +155,31 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
     }
 
-
+    // TODO Finish transition to UnoMessageBuilder
     [SlashCommand("check", "Shows your current deck")]
     public async Task CheckCommand(InteractionContext ctx)
     {
         try
         {
-            string message = "";
-            DiscordEmoji emoji;
-            List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);
-            var checkingPlayer = Uno.CheckCards(ctx.Guild.Id, ctx.User);
+            var message = new StringBuilder();
+            var users = Uno.GetDiscordUsers(ctx.Guild.Id);
+            var checkingPlayer = Uno.GetPlayer(ctx.Guild.Id, ctx.User);
 
-
-            UNOMessageBuilder.emojiIds.TryGetValue("BackCard", out ulong id);
-            emoji = DiscordEmoji.FromGuildEmote(ctx.Client, id);
-
-            //Shows how many cards all the players has
-            foreach (DiscordUser user in users)
+            // Create string with all the players cards
+            foreach (var user in users)
             {
-                IPlayer otherPlayer = Uno.CheckCards(ctx.Guild.Id, user);
-                if (otherPlayer.Id != checkingPlayer.Id)
-                {
-                    message += $"{user.Username}: ";
-                    for (int i = 0; i < otherPlayer.NumCards; i++)
-                    {
-                        message += emoji;
-                        message += "\n";
-                    }
-                }
+                var otherPlayer = Uno.GetPlayer(ctx.Guild.Id, user);
+
+                message.Append($"{user.Username}: ");
+                message.Append(MessageBuilder.PlayerHandToBackEmoji(otherPlayer));
             }
-            message += "Here's your current deck:\n";
-            await ctx.CreateResponseAsync(message, true);
-            message = "";
+            message.Append("Here's your current deck:\n");
+            await ctx.CreateResponseAsync(message.ToString(), true);
 
-            //Shows the ctx.user deck
-            foreach (var card in checkingPlayer)
-            {
-                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault(card.ToString()));
-                message += emoji;
-            }
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(message).AsEphemeral(true));
-            message = "";
-
-
-
+            // Shows the cards the player has
+            message.Clear();
+            message.Append(MessageBuilder.PlayerHandToFrontEmoji(checkingPlayer));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(message.ToString()).AsEphemeral());
         }
         catch (GameDoesNotExistException)
         {
@@ -236,11 +222,11 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         string message = "";
         string authorTitle = "";
-        string authorImgURL = "";
+        string authorImgUrl = "";
         string colorHex = "";
         string fieldTitle = "";
         string fieldValue = "";
-        string imageURL = "https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/";
+        string imageUrl = "https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/";
         DiscordEmbedBuilder embedMessage = new();
         DiscordEmoji emoji;
 
@@ -274,9 +260,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 }
                 message += "\n";
                 message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} card(s):\n";
-                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
-                for (int i = 0; i < state.PreviousPlayer.NumCards; i++)
-                    message += emoji;
+                message += MessageBuilder.PlayerHandToBackEmoji(state.PreviousPlayer);
                 message += "\n\n";
                 authorTitle = "";
             }
@@ -284,20 +268,18 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.WhoDrewCards != null)
             {
                 authorTitle = $"drew {state.CardsDrawn} card(s)\n";
-                authorImgURL += ctx.User.AvatarUrl;
+                authorImgUrl += ctx.User.AvatarUrl;
                 if ((state.OnTable is WildCard wc && wc.Symbol.Equals(WildCardSymbols.PlusFour)) || (state.OnTable is ColorCard cc && cc.Symbol.Equals(ColorCardSymbols.PlusTwo))) //TODO finish messages and change the authorTitle and URL when it's a 2+ or 4+ card
                 {
 
                     List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);
                     DiscordUser whoDrewCards = users.Find(user => users.IndexOf(user) == state.WhoDrewCards.Id);
-                    authorImgURL = whoDrewCards.AvatarUrl;
+                    authorImgUrl = whoDrewCards.AvatarUrl;
                 }
-                embedMessage.WithAuthor(authorTitle, null, authorImgURL);
+                embedMessage.WithAuthor(authorTitle, null, authorImgUrl);
 
                 fieldTitle += $"{((DiscordPlayer)state.WhoDrewCards).User.Username}'s card(s):\n";
-                emoji = DiscordEmoji.FromGuildEmote(ctx.Client, UNOMessageBuilder.emojiIds.GetValueOrDefault("BackCard"));
-                for (int i = 0; i < state.WhoDrewCards.NumCards; i++)
-                    fieldValue += emoji;
+                fieldValue += MessageBuilder.PlayerHandToBackEmoji(state.WhoDrewCards);
                 embedMessage.AddField(fieldTitle, fieldValue, false);
                 fieldTitle = "";
                 fieldValue = "";
@@ -338,15 +320,9 @@ public class UnoSlashCommands : ApplicationCommandModule
 
         if (state.NewTurn)
         {
-
             fieldTitle += $"Your turn now: {((DiscordPlayer)state.CurrentPlayer).User.Username}\n";
-
-            emoji = DiscordEmoji.FromGuildEmote(ctx.Client, 746444081424760943);
-            for (var i = 0; i < state.CurrentPlayer.NumCards; i++)
-                fieldValue += emoji;
+            fieldValue += MessageBuilder.PlayerHandToBackEmoji(state.CurrentPlayer);
             embedMessage.AddField(fieldTitle, fieldValue, false);
-
-
         }
 
         if (state.WaitingOnColorChange)
@@ -373,16 +349,16 @@ public class UnoSlashCommands : ApplicationCommandModule
 
 
 
-        imageURL += CardURL(state);
+        imageUrl += CardUrl(state);
         await ctx.CreateResponseAsync(embedMessage
-            .WithThumbnail(imageURL)
+            .WithThumbnail(imageUrl)
             .WithDescription(message)
             .WithTimestamp(DateTime.Now)
             .WithColor(new DiscordColor(colorHex))
             );
     }
 
-    private static string CardURL(GameState state)
+    private static string CardUrl(GameState state)
     {
         ICard card = state.OnTable;
         string cardImg = "";

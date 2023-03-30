@@ -1,6 +1,8 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
+using UNODiscordBot.Exceptions;
+using UNODiscordBot.Wrappers;
 
 namespace UNODiscordBot;
 
@@ -11,20 +13,17 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         var ulw = ctx.Services.GetService<UnoLibWrapper>();
         try
         {
-            var player = ulw.CheckCards(ctx.Guild.Id, ctx.User);
+            var player = ulw.GetPlayer(ctx.Guild.Id, ctx.User);
             var cardChoices = new List<DiscordAutoCompleteChoice>(player.NumCards);
-            foreach (var card in player)
-            {
-                cardChoices.Add(new DiscordAutoCompleteChoice(card.ToString(), card.ToString()));
-            }
+            cardChoices.AddRange(player.Select(card => new DiscordAutoCompleteChoice(card.ToString(), card.ToString())));
             return cardChoices;
         }
         // TODO catch proper exceptions
-        catch (Exception)
+        catch (GameDoesNotExistException)
         {
             return new[]
             {
-                new DiscordAutoCompleteChoice("testing", "testing")
+                new DiscordAutoCompleteChoice("No games available", " ")
             };
         }
     }

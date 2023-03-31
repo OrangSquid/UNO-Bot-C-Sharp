@@ -18,7 +18,6 @@ public class CardAutocompleteProvider : IAutocompleteProvider
             cardChoices.AddRange(player.Select(card => new DiscordAutoCompleteChoice(card.ToString(), card.ToString())));
             return cardChoices;
         }
-        // TODO catch proper exceptions
         catch (GameDoesNotExistException)
         {
             return new[]

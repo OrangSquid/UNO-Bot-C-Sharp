@@ -154,8 +154,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             await ctx.CreateResponseAsync("You cannot draw anymore", true);
         }
     }
-
-    // TODO Finish transition to UnoMessageBuilder
+    
     [SlashCommand("check", "Shows your current deck")]
     public async Task CheckCommand(InteractionContext ctx)
     {
@@ -263,7 +262,8 @@ public class UnoSlashCommands : ApplicationCommandModule
             {
                 authorTitle = $"drew {state.CardsDrawn} card(s)\n";
                 authorImgUrl += ctx.User.AvatarUrl;
-                if ((state.OnTable is WildCard wc && wc.Symbol.Equals(WildCardSymbols.PlusFour)) || (state.OnTable is ColorCard cc && cc.Symbol.Equals(ColorCardSymbols.PlusTwo))) //TODO finish messages and change the authorTitle and URL when it's a 2+ or 4+ card
+                if ((state.OnTable is WildCard wc && wc.Symbol.Equals(WildCardSymbols.PlusFour)) || (state.OnTable is ColorCard cc && cc.Symbol.Equals(ColorCardSymbols.PlusTwo))) 
+                    //TODO finish messages and change the authorTitle and URL when it's a 2+ or 4+ card
                 {
 
                     List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);

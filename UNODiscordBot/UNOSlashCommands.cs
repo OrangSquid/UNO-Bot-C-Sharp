@@ -221,17 +221,11 @@ public class UnoSlashCommands : ApplicationCommandModule
     private async Task StateInterpreter(bool newGame, GameState state, InteractionContext ctx)
     {
         string message = "";
-        string authorTitle = "";
         string authorImgUrl = "";
-        string colorHex = "";
         string fieldTitle = "";
         string fieldValue = "";
         string imageUrl = "https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/";
         DiscordEmbedBuilder embedMessage = new();
-        DiscordEmoji emoji;
-
-
-
 
         if (newGame)
         {
@@ -240,7 +234,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         else
         {
-            authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username}'s turn";
+            var authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username}'s turn";
             // Player JumpedIn
             if (state.JumpedIn && state.PreviousPlayer != null)
             {
@@ -325,29 +319,22 @@ public class UnoSlashCommands : ApplicationCommandModule
             embedMessage.AddField(fieldTitle, fieldValue, false);
         }
 
+        string colorHex;
         if (state.WaitingOnColorChange)
-            colorHex += "#000000";
+        {
+            colorHex = "#000000";
+        }
         else
-            switch (state.OnTable.Color)
+        {
+            colorHex = state.OnTable.Color switch
             {
-                case CardColors.Red:
-                    colorHex += "#FF5555";
-                    break;
-                case CardColors.Green:
-                    colorHex += "#55AA55";
-                    break;
-                case CardColors.Yellow:
-                    colorHex += "#FFAA00";
-                    break;
-                case CardColors.Blue:
-                    colorHex += "#5555FF";
-                    break;
-                default:
-                    colorHex += "#000000";
-                    break;
-            }
-
-
+                CardColors.Red => "#FF5555",
+                CardColors.Green => "#55AA55",
+                CardColors.Yellow => "#FFAA00",
+                CardColors.Blue => "#5555FF",
+                _ => "#000000",
+            };
+        }
 
         imageUrl += CardUrl(state);
         await ctx.CreateResponseAsync(embedMessage

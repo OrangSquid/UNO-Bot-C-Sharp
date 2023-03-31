@@ -7,13 +7,13 @@ namespace UNOLib;
 
 public class GameSystemFactory
 {
-    private const int NumberCards = 108;
-    private const int NumberOfZeros = 1;
-    private const int NumberOfEachColorCard = 2;
-    private const int NumberOfEachWildCard = 4;
+    protected const int NumberCards = 108;
+    protected const int NumberOfZeros = 1;
+    protected const int NumberOfEachColorCard = 2;
+    protected const int NumberOfEachWildCard = 4;
 
-    private static readonly Dictionary<string, ICard> AllCardsDict;
-    private static readonly List<ICard> AllCards;
+    protected static Dictionary<string, ICard> AllCardsDict;
+    protected static List<ICard> AllCards;
     protected readonly List<IPlayer> PlayersByOrder;
 
     public required bool DrawUntilPlayableCard { get; init; }

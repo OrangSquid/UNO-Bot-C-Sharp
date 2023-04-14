@@ -3,7 +3,6 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
 using UNODiscordBot.Wrappers;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UNODiscordBot;
 
@@ -38,6 +37,8 @@ public static class Program
 
         slash.RegisterCommands<UnoSlashCommands>(556652655397830657);
         slash.RegisterCommands<UnoSlashCommands>(1088175511320145970);
+        slash.RegisterCommands<UnoSlashCommands>(939964810521628752);
+
 
         discord.GuildDownloadCompleted += DiscordOnGuildDownloadCompleted;
 

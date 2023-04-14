@@ -16,9 +16,9 @@ public class UnoLibWrapper
         _guildGames = new Dictionary<ulong, GameStruct>();
     }
 
-    public void CreateGame(ulong guildId, DiscordUser user)
+    public void CreateGame(ulong channelId, DiscordUser user)
     {
-        if (_guildLobbies.ContainsKey(guildId) || _guildGames.ContainsKey(guildId))
+        if (_guildLobbies.ContainsKey(channelId) || _guildGames.ContainsKey(channelId))
         {
             throw new GameAlreadyExistsException();
         }
@@ -26,12 +26,12 @@ public class UnoLibWrapper
         {
             user
         };
-        _guildLobbies.Add(guildId, userList);
+        _guildLobbies.Add(channelId, userList);
     }
 
-    public void JoinGame(ulong guildId, DiscordUser user)
+    public void JoinGame(ulong channelId, DiscordUser user)
     {
-        if (!_guildLobbies.TryGetValue(guildId, out var lobby))
+        if (!_guildLobbies.TryGetValue(channelId, out var lobby))
         {
             throw new GameDoesNotExistException();
         }
@@ -42,13 +42,13 @@ public class UnoLibWrapper
         lobby.Insert(lobby.Count, user);
     }
 
-    public GameState StartGame(ulong guildId)
+    public GameState StartGame(ulong channelId)
     {
-        if (_guildGames.ContainsKey(guildId))
+        if (_guildGames.ContainsKey(channelId))
         {
             throw new GameAlreadyStartedException();
         }
-        if (!_guildLobbies.TryGetValue(guildId, out var lobby))
+        if (!_guildLobbies.TryGetValue(channelId, out var lobby))
         {
             throw new GameDoesNotExistException();
         }
@@ -63,49 +63,49 @@ public class UnoLibWrapper
         };
         gsf.CreatePlayers(lobby);
         var gs = gsf.Build();
-        _guildGames.Add(guildId, new GameStruct()
+        _guildGames.Add(channelId, new GameStruct()
         {
             Gs = gs,
             Players = lobby
         });
-        _guildLobbies.Remove(guildId);
+        _guildLobbies.Remove(channelId);
         return gs.State;
     }
 
-    public IPlayer GetPlayer(ulong guildId, DiscordUser player)
+    public IPlayer GetPlayer(ulong channelId, DiscordUser player)
     {
-        var game = GetGame(guildId);
+        var game = GetGame(channelId);
         return GetPlayer(game, player);
     }
 
-    public GameState PlayCard(ulong guildId, DiscordUser player, string card)
+    public GameState PlayCard(ulong channelId, DiscordUser player, string card)
     {
-        var game = GetGame(guildId);
+        var game = GetGame(channelId);
         game.Gs.CardPlay(GetPlayerId(game, player), card);
 
         if (game.Gs.State.GameFinished)
-            _guildGames.Remove(guildId);
+            _guildGames.Remove(channelId);
 
         return game.Gs.State;
     }
 
-    public GameState DrawCard(ulong guildId, DiscordUser player)
+    public GameState DrawCard(ulong channelId, DiscordUser player)
     {
-        var game = GetGame(guildId);
+        var game = GetGame(channelId);
         game.Gs.DrawCard(GetPlayerId(game, player));
         return game.Gs.State;
     }
 
-    public GameState ChangeColor(ulong guildId, DiscordUser player, string color)
+    public GameState ChangeColor(ulong channelId, DiscordUser player, string color)
     {
-        var game = GetGame(guildId);
+        var game = GetGame(channelId);
         game.Gs.ChangeOnTableColor(GetPlayerId(game, player), color);
         return game.Gs.State;
     }
 
-    public GameState Skip(ulong guildId, DiscordUser player)
+    public GameState Skip(ulong channelId, DiscordUser player)
     {
-        var game = GetGame(guildId);
+        var game = GetGame(channelId);
         game.Gs.Skip(GetPlayerId(game, player));
         return game.Gs.State;
     }
@@ -125,15 +125,15 @@ public class UnoLibWrapper
         return game.Gs.GetPlayer(GetPlayerId(game, player));
     }
 
-    internal List<DiscordUser> GetDiscordUsers(ulong guildId)
+    internal List<DiscordUser> GetDiscordUsers(ulong channelId)
     {
-        var game = GetGame(guildId);
+        var game = GetGame(channelId);
         return game.Players;
     }
 
-    private GameStruct GetGame(ulong guildId)
+    private GameStruct GetGame(ulong channelId)
     {
-        if (!_guildGames.TryGetValue(guildId, out var game))
+        if (!_guildGames.TryGetValue(channelId, out var game))
         {
             throw new GameDoesNotExistException();
         }

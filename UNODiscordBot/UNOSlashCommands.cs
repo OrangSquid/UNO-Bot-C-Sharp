@@ -27,7 +27,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            Uno.CreateGame(ctx.Guild.Id, ctx.User);
+            Uno.CreateGame(ctx.Channel.Id, ctx.User);
             await ctx.CreateResponseAsync("Lobby Created");
         }
         catch (GameAlreadyExistsException)
@@ -41,7 +41,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            Uno.JoinGame(ctx.Guild.Id, ctx.User);
+            Uno.JoinGame(ctx.Channel.Id, ctx.User);
             await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new()
             {
                 Content = ctx.User.Username + " Joined Lobby"
@@ -62,7 +62,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            var state = Uno.StartGame(ctx.Guild.Id);
+            var state = Uno.StartGame(ctx.Channel.Id);
             await StateInterpreter(true, state, ctx);
         }
         catch (GameAlreadyStartedException)
@@ -82,7 +82,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            var state = Uno.PlayCard(ctx.Guild.Id, ctx.User, card);
+            var state = Uno.PlayCard(ctx.Channel.Id, ctx.User, card);
             await StateInterpreter(false, state, ctx);
         }
         catch (GameDoesNotExistException)
@@ -113,7 +113,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            var state = Uno.ChangeColor(ctx.Guild.Id, ctx.User, color);
+            var state = Uno.ChangeColor(ctx.Channel.Id, ctx.User, color);
             await StateInterpreter(false, state, ctx);
         }
         catch (GameDoesNotExistException)
@@ -135,7 +135,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            await StateInterpreter(false, Uno.DrawCard(ctx.Guild.Id, ctx.User), ctx);
+            await StateInterpreter(false, Uno.DrawCard(ctx.Channel.Id, ctx.User), ctx);
         }
         catch (GameDoesNotExistException)
         {
@@ -161,13 +161,13 @@ public class UnoSlashCommands : ApplicationCommandModule
         try
         {
             var message = new StringBuilder();
-            var users = Uno.GetDiscordUsers(ctx.Guild.Id);
-            var checkingPlayer = Uno.GetPlayer(ctx.Guild.Id, ctx.User);
+            var users = Uno.GetDiscordUsers(ctx.Channel.Id);
+            var checkingPlayer = Uno.GetPlayer(ctx.Channel.Id, ctx.User);
 
             // Create string with all the players cards
             foreach (var user in users)
             {
-                var otherPlayer = Uno.GetPlayer(ctx.Guild.Id, user);
+                var otherPlayer = Uno.GetPlayer(ctx.Channel.Id, user);
 
                 message.Append($"{user.Username}: ");
                 message.Append(MessageBuilder.PlayerHandToBackEmoji(otherPlayer));
@@ -195,7 +195,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            await StateInterpreter(false, Uno.Skip(ctx.Guild.Id, ctx.User), ctx);
+            await StateInterpreter(false, Uno.Skip(ctx.Channel.Id, ctx.User), ctx);
         }
         catch (GameDoesNotExistException)
         {
@@ -215,7 +215,6 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
     }
 
-
     //TODO refactor this shi
     private async Task StateInterpreter(bool newGame, GameState state, InteractionContext ctx)
     {
@@ -233,9 +232,9 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         else
         {
-            var authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username}'s turn";
+            var authorTitle = $"{((DiscordPlayer)state.PreviousPlayer)?.User.Username}'s turn";
             // Player JumpedIn
-            if (state.JumpedIn && state.PreviousPlayer != null)
+            if (state is { JumpedIn: true, PreviousPlayer: not null })
             {
                 authorTitle = $"{((DiscordPlayer)state.PreviousPlayer).User.Username} jumped in!";
             }
@@ -262,12 +261,11 @@ public class UnoSlashCommands : ApplicationCommandModule
             {
                 authorTitle = $"drew {state.CardsDrawn} card(s)\n";
                 authorImgUrl += ctx.User.AvatarUrl;
-                if ((state.OnTable is WildCard wc && wc.Symbol.Equals(WildCardSymbols.PlusFour)) || (state.OnTable is ColorCard cc && cc.Symbol.Equals(ColorCardSymbols.PlusTwo))) 
-                    //TODO finish messages and change the authorTitle and URL when it's a 2+ or 4+ card
+                if (state.OnTable is WildCard { Symbol: WildCardSymbols.PlusFour } or ColorCard { Symbol: ColorCardSymbols.PlusTwo })
                 {
 
-                    List<DiscordUser> users = Uno.GetDiscordUsers(ctx.Guild.Id);
-                    DiscordUser whoDrewCards = users.Find(user => users.IndexOf(user) == state.WhoDrewCards.Id);
+                    var users = Uno.GetDiscordUsers(ctx.Channel.Id);
+                    var whoDrewCards = users.Find(user => users.IndexOf(user) == state.WhoDrewCards.Id);
                     authorImgUrl = whoDrewCards.AvatarUrl;
                 }
                 embedMessage.WithAuthor(authorTitle, null, authorImgUrl);
@@ -347,31 +345,34 @@ public class UnoSlashCommands : ApplicationCommandModule
 
     private static string CardUrl(GameState state)
     {
-        ICard card = state.OnTable;
-        string cardImg = "";
+        var card = state.OnTable;
+        var cardImg = "";
 
-        if (card is WildCard wc)
+        switch (card)
         {
-            if (!state.WaitingOnColorChange)
+            case WildCard wc:
             {
-                cardImg += state.ColorChanged.ToString().ToLower();
-                cardImg += "%20";
+                if (!state.WaitingOnColorChange)
+                {
+                    cardImg += state.ColorChanged.ToString().ToLower();
+                    cardImg += "%20";
+                }
+                return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
             }
-            return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
+            case ColorCard cc:
+            {
+                cardImg += cc.Color.ToString().ToLower() + "%20";
+
+                if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
+                    cardImg += cc.Symbol.ToString().ToLower();
+                else
+                    cardImg += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
+                cardImg += ".png";
+
+                return cardImg;
+            }
+            default:
+                return "";
         }
-        else if (card is ColorCard cc)
-        {
-            cardImg += cc.Color.ToString().ToLower() + "%20";
-
-            if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
-                cardImg += cc.Symbol.ToString().ToLower();
-            else
-                cardImg += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
-            cardImg += ".png";
-
-            return cardImg;
-        }
-
-        return "";
     }
 }

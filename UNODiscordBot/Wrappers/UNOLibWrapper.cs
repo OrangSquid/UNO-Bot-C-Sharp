@@ -7,18 +7,77 @@ namespace UNODiscordBot.Wrappers;
 
 public class UnoLibWrapper
 {
-    private readonly Dictionary<ulong, List<DiscordUser>> _guildLobbies;
-    private readonly Dictionary<ulong, GameStruct> _guildGames;
+    private readonly Dictionary<ulong, List<DiscordUser>> _channelLobbies;
+    private readonly Dictionary<ulong, GameStruct> _channelGames;
+    private readonly Dictionary<ulong, GameSettings> _channelSettings;
 
     public UnoLibWrapper()
     {
-        _guildLobbies = new Dictionary<ulong, List<DiscordUser>>();
-        _guildGames = new Dictionary<ulong, GameStruct>();
+        _channelLobbies = new Dictionary<ulong, List<DiscordUser>>();
+        _channelGames = new Dictionary<ulong, GameStruct>();
+        _channelSettings = new Dictionary<ulong, GameSettings>();
+    }
+
+    /// <summary>
+    /// Sets default settings for all channels the bot is in
+    /// </summary>
+    /// <param name="channelId"></param>
+    public void SetSettings(ulong channelId)
+    {
+        _channelSettings.Add(channelId, 
+            new GameSettings
+            {
+                DrawUntilPlayableCard = false,
+                JumpIn = false,
+                MustPlay = false,
+                StackPlusTwo = true,
+                UnoPenalty = 2
+            });
+    }
+
+    public void DeleteSettings(ulong channelId)
+    {
+        _channelSettings.Remove(channelId);
+    }
+
+    public void SetDrawUntilPlayableCard(ulong channelId, bool value)
+    {
+        var channelSetting = _channelSettings[channelId];
+        channelSetting.DrawUntilPlayableCard = value;
+        _channelSettings[channelId] = channelSetting;
+    }
+
+    public void SetStackPlusTwo(ulong channelId, bool value)
+    {
+        var channelSetting = _channelSettings[channelId];
+        channelSetting.StackPlusTwo = value;
+        _channelSettings[channelId] = channelSetting;
+    }
+
+    public void SetMustPlay(ulong channelId, bool value)
+    {
+        var channelSetting = _channelSettings[channelId];
+        channelSetting.MustPlay = value;
+        _channelSettings[channelId] = channelSetting;
+    }
+
+    public void SetJumpIn(ulong channelId, bool value)
+    {
+        var channelSetting = _channelSettings[channelId];
+        channelSetting.JumpIn = value;
+        _channelSettings[channelId] = channelSetting;
+    }
+
+    public void SetUnoPenalty(ulong channelId, int value)
+    {
+        var channelSetting = _channelSettings[channelId];
+        channelSetting.UnoPenalty = value;
+        _channelSettings[channelId] = channelSetting;
     }
 
     public void CreateGame(ulong channelId, DiscordUser user)
     {
-        if (_guildLobbies.ContainsKey(channelId) || _guildGames.ContainsKey(channelId))
+        if (_channelLobbies.ContainsKey(channelId) || _channelGames.ContainsKey(channelId))
         {
             throw new GameAlreadyExistsException();
         }
@@ -26,12 +85,12 @@ public class UnoLibWrapper
         {
             user
         };
-        _guildLobbies.Add(channelId, userList);
+        _channelLobbies.Add(channelId, userList);
     }
 
     public void JoinGame(ulong channelId, DiscordUser user)
     {
-        if (!_guildLobbies.TryGetValue(channelId, out var lobby))
+        if (!_channelLobbies.TryGetValue(channelId, out var lobby))
         {
             throw new GameDoesNotExistException();
         }
@@ -39,36 +98,66 @@ public class UnoLibWrapper
         {
             throw new AlreadyPartOfTheGameException();
         }
+        if (lobby.Count >= 6)
+        {
+            throw new TooManyPlayersException();
+        }
         lobby.Insert(lobby.Count, user);
     }
 
-    public GameState StartGame(ulong channelId)
+    public void LeaveGame(ulong channelId, DiscordUser user)
     {
-        if (_guildGames.ContainsKey(channelId))
+        if (!_channelLobbies.TryGetValue(channelId, out var lobby))
+        {
+            throw new GameDoesNotExistException();
+        }
+        if (lobby.IndexOf(user) == -1)
+        {
+            throw new PlayerDoesNotExistException();
+        }
+        if (lobby.Count == 1)
+        {
+            _channelLobbies.Remove(channelId);
+            throw new NotEnoughPlayersException();
+        }
+        lobby.Remove(user);
+    }
+
+    public GameState StartGame(ulong channelId, DiscordUser user)
+    {
+        if (_channelGames.ContainsKey(channelId))
         {
             throw new GameAlreadyStartedException();
         }
-        if (!_guildLobbies.TryGetValue(channelId, out var lobby))
+        if (!_channelLobbies.TryGetValue(channelId, out var lobby))
         {
             throw new GameDoesNotExistException();
+        }
+        if(_channelLobbies[channelId].IndexOf(user) == -1)
+        {
+            throw new PlayerDoesNotExistException();
+        }
+        if (lobby.Count < 2)
+        {
+            throw new NotEnoughPlayersException();
         }
         int nPlayers = lobby.Count;
         GameSystemFactoryWrapper gsf = new(nPlayers)
         {
-            DrawUntilPlayableCard = false,
-            StackPlusTwo = true,
-            MustPlay = false,
-            JumpIn = true,
-            UnoPenalty = 2
+            DrawUntilPlayableCard = _channelSettings[channelId].DrawUntilPlayableCard,
+            StackPlusTwo = _channelSettings[channelId].StackPlusTwo,
+            MustPlay = _channelSettings[channelId].MustPlay,
+            JumpIn = _channelSettings[channelId].JumpIn,
+            UnoPenalty = _channelSettings[channelId].UnoPenalty
         };
         gsf.CreatePlayers(lobby);
         var gs = gsf.Build();
-        _guildGames.Add(channelId, new GameStruct()
+        _channelGames.Add(channelId, new GameStruct()
         {
             Gs = gs,
             Players = lobby
         });
-        _guildLobbies.Remove(channelId);
+        _channelLobbies.Remove(channelId);
         return gs.State;
     }
 
@@ -84,7 +173,7 @@ public class UnoLibWrapper
         game.Gs.CardPlay(GetPlayerId(game, player), card);
 
         if (game.Gs.State.GameFinished)
-            _guildGames.Remove(channelId);
+            EndGame(channelId);
 
         return game.Gs.State;
     }
@@ -110,6 +199,16 @@ public class UnoLibWrapper
         return game.Gs.State;
     }
 
+    public bool EndGame(ulong channelId)
+    {
+        return _channelGames.Remove(channelId);
+    }
+
+    private IPlayer GetPlayer(GameStruct game, DiscordUser player)
+    {
+        return game.Gs.GetPlayer(GetPlayerId(game, player));
+    }
+
     private int GetPlayerId(GameStruct game, DiscordUser player)
     {
         int playerId = game.Players.IndexOf(player);
@@ -119,12 +218,6 @@ public class UnoLibWrapper
         }
         return playerId;
     }
-
-    private IPlayer GetPlayer(GameStruct game, DiscordUser player)
-    {
-        return game.Gs.GetPlayer(GetPlayerId(game, player));
-    }
-
     internal List<DiscordUser> GetDiscordUsers(ulong channelId)
     {
         var game = GetGame(channelId);
@@ -133,7 +226,7 @@ public class UnoLibWrapper
 
     private GameStruct GetGame(ulong channelId)
     {
-        if (!_guildGames.TryGetValue(channelId, out var game))
+        if (!_channelGames.TryGetValue(channelId, out var game))
         {
             throw new GameDoesNotExistException();
         }

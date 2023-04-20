@@ -10,17 +10,95 @@ using UNOLib.Player;
 
 namespace UNODiscordBot;
 
-// ReSharper disable once ClassNeverInstantiated.Global
 public class UnoSlashCommands : ApplicationCommandModule
 {
 #pragma warning disable CS8618
-    // ReSharper disable once MemberCanBePrivate.Global
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public UnoLibWrapper Uno { get; set; }
-    // ReSharper disable once MemberCanBePrivate.Global
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public UnoMessageBuilder MessageBuilder { get; set; }
+
+    [SlashCommandGroup("settings", "Change the way the game plays")]
+    public class SettingsCommands : ApplicationCommandModule
+    {
+        public UnoLibWrapper Uno { get; set; }
 #pragma warning restore CS8618
+
+        [SlashCommand("drawUntilPlayableCard", "Draw Until Playable Card")]
+        public async Task DrawUntilPlayableCardCommand(InteractionContext ctx,
+            [Option("value", "Draw Until Playable Card")]
+            string drawUntilPlayableCard)
+        {
+            try
+            {
+                Uno.SetDrawUntilPlayableCard(ctx.Channel.Id, Convert.ToBoolean(drawUntilPlayableCard));
+                await ctx.CreateResponseAsync($"Draw Until Playable Card set to {drawUntilPlayableCard}");
+            }
+            catch (ArgumentException)
+            {
+                await ctx.CreateResponseAsync("Something went very wrong", true);
+            }
+        }
+
+        [SlashCommand("jumpIn", "Jump In")]
+        public async Task JumpInCommand(InteractionContext ctx,
+            [Option("value", "Jump In")] string jumpIn)
+        {
+            try
+            {
+                Uno.SetJumpIn(ctx.Channel.Id, Convert.ToBoolean(jumpIn));
+                await ctx.CreateResponseAsync($"Jump In set to {jumpIn}");
+            }
+            catch (ArgumentException)
+            {
+                await ctx.CreateResponseAsync("Something went very wrong", true);
+            }
+        }
+
+        [SlashCommand("mustPlay", "Must Play")]
+        public async Task MustPlayCommand(InteractionContext ctx,
+            [Option("value", "Must Play")] bool mustPlay)
+        {
+            try
+            {
+                Uno.SetMustPlay(ctx.Channel.Id, Convert.ToBoolean(mustPlay));
+                await ctx.CreateResponseAsync($"Must Play set to {mustPlay}");
+            }
+            catch (ArgumentException)
+            {
+                await ctx.CreateResponseAsync("Something went very wrong", true);
+            }
+        }
+
+        [SlashCommand("stackPlusTwo", "Stack Plus Two Cards")]
+        public async Task StackPlusTwoCommand(InteractionContext ctx,
+            [Option("value", "Stack Plus Two Cards")] bool stackPlusTwo)
+        {
+            try
+            {
+                Uno.SetStackPlusTwo(ctx.Channel.Id, Convert.ToBoolean(stackPlusTwo));
+                await ctx.CreateResponseAsync($"Stack Plus Two set to {stackPlusTwo}");
+            }
+            catch (ArgumentException)
+            {
+                await ctx.CreateResponseAsync("Something went very wrong", true);
+            }
+        }
+
+        [SlashCommand("unoPenalty", "Not saying uno penalty")]
+        public async Task UnoPenaltyCommand(InteractionContext ctx,
+            [Option("value", "Not saying uno penalty")]
+            long unoPenalty)
+        {
+            try
+            {
+                Uno.SetUnoPenalty(ctx.Channel.Id, Convert.ToInt32(unoPenalty));
+                await ctx.CreateResponseAsync($"Uno Penalty set to {unoPenalty}");
+            }
+            catch (ArgumentException)
+            {
+                await ctx.CreateResponseAsync("Something went very wrong", true);
+            }
+        }
+    }
 
     [SlashCommand("new", "Make a new game for people to join")]
     public async Task NewGameCommand(InteractionContext ctx)
@@ -32,7 +110,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (GameAlreadyExistsException)
         {
-            await ctx.CreateResponseAsync("Game Already Exists", true);
+            await ctx.CreateResponseAsync("Game already exists", true);
         }
     }
 
@@ -44,16 +122,45 @@ public class UnoSlashCommands : ApplicationCommandModule
             Uno.JoinGame(ctx.Channel.Id, ctx.User);
             await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new()
             {
-                Content = ctx.User.Username + " Joined Lobby"
+                Content = ctx.User.Username + " joined the lobby"
             });
         }
         catch (GameDoesNotExistException)
         {
-            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+            await ctx.CreateResponseAsync("Game does not exist", true);
         }
         catch (AlreadyPartOfTheGameException)
         {
             await ctx.CreateResponseAsync("Already part of the game", true);
+        }
+        catch (TooManyPlayersException)
+        {
+            await ctx.CreateResponseAsync("Too many players", true);
+        }
+    }
+
+    [SlashCommand("leave", "Leave an existing game")]
+    public async Task LeaveCommand(InteractionContext ctx)
+    {
+        try
+        {
+            Uno.LeaveGame(ctx.Channel.Id, ctx.User);
+            await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new()
+            {
+                Content = ctx.User.Username + " left the lobby"
+            });
+        }
+        catch (GameDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("Lobby does not exist", true);
+        }
+        catch (PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
+        }
+        catch (NotEnoughPlayersException)
+        {
+            await ctx.CreateResponseAsync("Not enough players, lobby was deleted", false);
         }
     }
 
@@ -62,7 +169,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            var state = Uno.StartGame(ctx.Channel.Id);
+            var state = Uno.StartGame(ctx.Channel.Id, ctx.User);
             await StateInterpreter(true, state, ctx);
         }
         catch (GameAlreadyStartedException)
@@ -71,7 +178,15 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (GameDoesNotExistException)
         {
-            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+            await ctx.CreateResponseAsync("Game does not exist", true);
+        }
+        catch (PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
+        }
+        catch (NotEnoughPlayersException)
+        {
+            await ctx.CreateResponseAsync("Not enough players", true);
         }
     }
 
@@ -87,7 +202,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (GameDoesNotExistException)
         {
-            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+            await ctx.CreateResponseAsync("Game does not exist", true);
         }
         catch (GameIsFinishedException)
         {
@@ -100,6 +215,10 @@ public class UnoSlashCommands : ApplicationCommandModule
         catch (NotPlayersTurnException)
         {
             await ctx.CreateResponseAsync("It's not your turn", true);
+        }
+        catch (PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
         }
     }
 
@@ -118,7 +237,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (GameDoesNotExistException)
         {
-            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+            await ctx.CreateResponseAsync("Game does not exist", true);
         }
         catch (CannotChangeColorException)
         {
@@ -127,6 +246,10 @@ public class UnoSlashCommands : ApplicationCommandModule
         catch (NotPlayersTurnException)
         {
             await ctx.CreateResponseAsync("It's not your turn", true);
+        }
+        catch (PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
         }
     }
 
@@ -139,7 +262,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (GameDoesNotExistException)
         {
-            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+            await ctx.CreateResponseAsync("Game does not exist", true);
         }
         catch (GameIsFinishedException)
         {
@@ -153,8 +276,12 @@ public class UnoSlashCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync("You cannot draw anymore", true);
         }
+        catch (PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
+        }
     }
-    
+
     [SlashCommand("check", "Shows your current deck")]
     public async Task CheckCommand(InteractionContext ctx)
     {
@@ -171,6 +298,7 @@ public class UnoSlashCommands : ApplicationCommandModule
 
                 message.Append($"{user.Username}: ");
                 message.Append(MessageBuilder.PlayerHandToBackEmoji(otherPlayer));
+                message.Append('\n');
             }
             message.Append("Here's your current deck:\n");
             await ctx.CreateResponseAsync(message.ToString(), true);
@@ -182,7 +310,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (GameDoesNotExistException)
         {
-            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+            await ctx.CreateResponseAsync("Game does not exist", true);
         }
         catch (PlayerDoesNotExistException)
         {
@@ -199,7 +327,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (GameDoesNotExistException)
         {
-            await ctx.CreateResponseAsync("Game Does Not Exist", true);
+            await ctx.CreateResponseAsync("Game does not exist", true);
         }
         catch (GameIsFinishedException)
         {
@@ -213,10 +341,32 @@ public class UnoSlashCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync("You cannot skip", true);
         }
+        catch (PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
+        }
     }
 
-    //TODO refactor this shi
-    private async Task StateInterpreter(bool newGame, GameState state, InteractionContext ctx)
+    [SlashCommand("End", "Ends the game abruptly")]
+    public async Task KillCommand(InteractionContext ctx)
+    {
+        try
+        {
+            Uno.EndGame(ctx.Channel.Id);
+            await ctx.CreateResponseAsync("Game finished");
+        }
+        catch (GameDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("Game does not exist", true);
+        }
+        catch (PlayerDoesNotExistException)
+        {
+            await ctx.CreateResponseAsync("You're not part of the game", true);
+        }
+    }
+
+    //TODO refactor this shit
+    private async Task StateInterpreter(bool newGame, GameState state, BaseContext ctx)
     {
         string message = "";
         string authorImgUrl = "";
@@ -241,9 +391,9 @@ public class UnoSlashCommands : ApplicationCommandModule
             // Played a card
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
-                if(!state.JumpedIn)
+                if (!state.JumpedIn)
                     message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n";
-                
+
                 embedMessage.WithAuthor(authorTitle, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
                 {
@@ -272,7 +422,7 @@ public class UnoSlashCommands : ApplicationCommandModule
 
                 fieldTitle += $"{((DiscordPlayer)state.WhoDrewCards).User.Username}'s card(s):\n";
                 fieldValue += MessageBuilder.PlayerHandToBackEmoji(state.WhoDrewCards);
-                embedMessage.AddField(fieldTitle, fieldValue, false);
+                embedMessage.AddField(fieldTitle, fieldValue);
                 fieldTitle = "";
                 fieldValue = "";
             }
@@ -314,7 +464,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         {
             fieldTitle += $"Your turn now: {((DiscordPlayer)state.CurrentPlayer).User.Username}\n";
             fieldValue += MessageBuilder.PlayerHandToBackEmoji(state.CurrentPlayer);
-            embedMessage.AddField(fieldTitle, fieldValue, false);
+            embedMessage.AddField(fieldTitle, fieldValue);
         }
 
         string colorHex;
@@ -351,26 +501,26 @@ public class UnoSlashCommands : ApplicationCommandModule
         switch (card)
         {
             case WildCard wc:
-            {
-                if (!state.WaitingOnColorChange)
                 {
-                    cardImg += state.ColorChanged.ToString().ToLower();
-                    cardImg += "%20";
+                    if (!state.WaitingOnColorChange)
+                    {
+                        cardImg += state.ColorChanged.ToString().ToLower();
+                        cardImg += "%20";
+                    }
+                    return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
                 }
-                return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
-            }
             case ColorCard cc:
-            {
-                cardImg += cc.Color.ToString().ToLower() + "%20";
+                {
+                    cardImg += cc.Color.ToString().ToLower() + "%20";
 
-                if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
-                    cardImg += cc.Symbol.ToString().ToLower();
-                else
-                    cardImg += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
-                cardImg += ".png";
+                    if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
+                        cardImg += cc.Symbol.ToString().ToLower();
+                    else
+                        cardImg += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
+                    cardImg += ".png";
 
-                return cardImg;
-            }
+                    return cardImg;
+                }
             default:
                 return "";
         }

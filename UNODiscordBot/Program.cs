@@ -1,4 +1,5 @@
 ﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ namespace UNODiscordBot;
 public static class Program
 {
     private static UnoMessageBuilder? _messageBuilder;
+    private static UnoLibWrapper? _unoLibWrapper;
 
     public static async Task Main()
     {
@@ -24,9 +26,10 @@ public static class Program
         });
 
         _messageBuilder = new UnoMessageBuilder();
+        _unoLibWrapper = new UnoLibWrapper();
 
         var services = new ServiceCollection()
-            .AddSingleton<UnoLibWrapper>()
+            .AddSingleton(_unoLibWrapper)
             .AddSingleton(_messageBuilder)
             .BuildServiceProvider();
 
@@ -36,19 +39,37 @@ public static class Program
         });
 
         slash.RegisterCommands<UnoSlashCommands>(556652655397830657);
-        slash.RegisterCommands<UnoSlashCommands>(1088175511320145970);
-        slash.RegisterCommands<UnoSlashCommands>(939964810521628752);
-
 
         discord.GuildDownloadCompleted += DiscordOnGuildDownloadCompleted;
+        discord.ChannelDeleted += DiscordOnChannelDeleted;
+        discord.ChannelCreated += DiscordOnChannelCreated;
 
         await discord.ConnectAsync();
         await Task.Delay(-1);
     }
 
+    private static Task DiscordOnChannelDeleted(DiscordClient sender, ChannelDeleteEventArgs e)
+    {
+        _unoLibWrapper?.DeleteSettings(e.Channel.Id);
+        return Task.CompletedTask;
+    }
+
+    private static Task DiscordOnChannelCreated(DiscordClient sender, ChannelCreateEventArgs e)
+    {
+        _unoLibWrapper?.SetSettings(e.Channel.Id);
+        return Task.CompletedTask;
+    }
+
     private static Task DiscordOnGuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs e)
     {
         _messageBuilder?.BuildEmojiDictionary(sender);
+        foreach (var guild in e.Guilds)
+        {
+            foreach (ulong channel in guild.Value.Channels.Keys)
+            {
+                _unoLibWrapper?.SetSettings(channel);
+            }
+        }
         return Task.CompletedTask;
     }
 }

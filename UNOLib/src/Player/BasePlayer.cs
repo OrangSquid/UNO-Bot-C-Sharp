@@ -1,27 +1,26 @@
-﻿
-using System.Collections;
+﻿using System.Collections;
 using UNOLib.Cards;
 using UNOLib.Exceptions;
 
 namespace UNOLib.Player;
 
-internal class Player : IPlayer
+public class BasePlayer : IPlayer
 {
     private readonly SortedDictionary<string, Stack<ICard>> _deck = new(new CardComparer());
     private int _numPlusTwoCards;
     private int _numWildPlusFourCards;
 
     public int Id { get; }
-    public bool HasPlusTwoCards => _numPlusTwoCards > 0;
-    public bool HasWildPlusFourCards => _numWildPlusFourCards > 0;
+    bool IPlayer.HasPlusTwoCards => _numPlusTwoCards > 0;
+    bool IPlayer.HasWildPlusFourCards => _numWildPlusFourCards > 0;
     public int NumCards { get; private set; }
 
-    public Player(int id)
+    protected internal BasePlayer(int id)
     {
         Id = id;
     }
 
-    public void AddCard(ICard card)
+    void IPlayer.AddCard(ICard card)
     {
         // Check if player has card and store it in cardsSameValue
         if (!_deck.TryGetValue(card.ToString(), out Stack<ICard>? cardsSameValue))
@@ -42,7 +41,7 @@ internal class Player : IPlayer
         NumCards++;
     }
 
-    public void RemoveCard(string cardId)
+    bool IPlayer.RemoveCard(string cardId)
     {
         // Check if player has card and store it in cardsSameValue
         if (!_deck.TryGetValue(cardId, out Stack<ICard>? cardsSameValue))
@@ -65,6 +64,7 @@ internal class Player : IPlayer
             _numWildPlusFourCards--;
         }
         NumCards--;
+        return NumCards == 1;
     }
 
     public IEnumerator<ICard> GetEnumerator()

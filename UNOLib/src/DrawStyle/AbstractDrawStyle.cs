@@ -10,8 +10,8 @@ internal abstract class AbstractDrawStyle : IDrawStyle
 
     protected AbstractDrawStyle(IEnumerable<ICard> fullDeck, int numberTotalCards)
     {
-        _fullDeck = new(fullDeck.OrderBy(_ => Rng.Next()).ToList());
-        _playedCards = new(numberTotalCards);
+        _fullDeck = new Stack<ICard>(fullDeck.OrderBy(_ => Rng.Next()).ToList());
+        _playedCards = new List<ICard>(numberTotalCards);
     }
 
     public void Push(ICard card)
@@ -24,7 +24,7 @@ internal abstract class AbstractDrawStyle : IDrawStyle
         var card = _fullDeck.Pop();
         if (_fullDeck.Count == 0)
         {
-            _fullDeck = new(_playedCards.OrderBy(_ => Rng.Next()).ToList());
+            _fullDeck = new Stack<ICard>(_playedCards.OrderBy(_ => Rng.Next()).ToList());
             _playedCards.Clear();
         }
         return card;

@@ -8,11 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UNOLib\UNOLib.csproj" />
+    <Compile Remove="Tests\**" />
+    <EmbeddedResource Remove="Tests\**" />
+    <None Remove="Tests\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Tests\" />
+    <ProjectReference Include="..\UNOLib\UNOLib.csproj" />
   </ItemGroup>
 
 </Project>

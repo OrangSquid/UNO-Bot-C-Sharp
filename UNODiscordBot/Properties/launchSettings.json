@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "UNODiscordBot": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

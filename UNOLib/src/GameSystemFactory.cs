@@ -56,7 +56,7 @@ public class GameSystemFactory
             }
         }
     }
-    
+
     public GameSystemFactory(int nPlayers)
     {
         PlayersByOrder = new List<IPlayer>(nPlayers);

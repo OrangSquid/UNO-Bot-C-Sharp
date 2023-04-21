@@ -24,7 +24,7 @@ public class UnoLibWrapper
     /// <param name="channelId"></param>
     public void SetSettings(ulong channelId)
     {
-        _channelSettings.Add(channelId, 
+        _channelSettings.Add(channelId,
             new GameSettings
             {
                 DrawUntilPlayableCard = false,
@@ -133,7 +133,7 @@ public class UnoLibWrapper
         {
             throw new GameDoesNotExistException();
         }
-        if(_channelLobbies[channelId].IndexOf(user) == -1)
+        if (_channelLobbies[channelId].IndexOf(user) == -1)
         {
             throw new PlayerDoesNotExistException();
         }

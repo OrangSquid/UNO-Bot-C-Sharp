@@ -17,7 +17,7 @@ public class UnoMessageBuilder
 
         _emojisDictionary = new Dictionary<string, DiscordEmoji>();
 
-        var rm = new ResourceManager("UNODiscordBot.UNODiscordEmojis", typeof(Program).Assembly);
+        var rm = new ResourceManager("UNODiscordBot.src.UNODiscordEmojis", typeof(Program).Assembly);
         var rs = rm.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
 
         if (rs == null) return;

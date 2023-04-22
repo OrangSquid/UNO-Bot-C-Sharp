@@ -24,14 +24,14 @@
     <ProjectReference Include="..\UNOLib\UNOLib.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="UNODiscordEmojis.Designer.cs">
+    <Compile Update="src\UNODiscordEmojis.Designer.cs">
+      <DependentUpon>UNODiscordEmojis.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>UNODiscordEmojis.resx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Update="UNODiscordEmojis.resx">
+    <EmbeddedResource Update="src\UNODiscordEmojis.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>UNODiscordEmojis.Designer.cs</LastGenOutput>
     </EmbeddedResource>

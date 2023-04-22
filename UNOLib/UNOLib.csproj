@@ -12,8 +12,4 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
 
-  <ItemGroup>
-    <None Remove="Exceptions\NewFile1.txt" />
-  </ItemGroup>
-
 </Project>

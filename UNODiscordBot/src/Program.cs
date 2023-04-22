@@ -14,9 +14,7 @@ public static class Program
 
     public static async Task Main()
     {
-        Console.WriteLine(@"Main/Dev");
-        string choice = Console.ReadLine() ?? string.Empty;
-        string token = await File.ReadAllTextAsync(choice == "m" ? "MToken.txt" : "DToken.txt");
+        string token = Environment.GetEnvironmentVariable("UNO_TOKEN") ?? throw new Exception("No token found");
 
         DiscordClient discord = new(new DiscordConfiguration
         {
@@ -38,7 +36,7 @@ public static class Program
             Services = services
         });
 
-        slash.RegisterCommands<UnoSlashCommands>(556652655397830657);
+        slash.RegisterCommands<UnoSlashCommands>();
 
         discord.GuildDownloadCompleted += DiscordOnGuildDownloadCompleted;
         discord.ChannelDeleted += DiscordOnChannelDeleted;

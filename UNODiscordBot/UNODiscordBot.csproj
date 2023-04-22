@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Publish">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
@@ -7,37 +6,34 @@
     <Nullable>enable</Nullable>
     <FileVersion>1.0</FileVersion>
     <AssemblyVersion>1.0</AssemblyVersion>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="Exceptions\NewFile1.txt" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="4.3.0" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.3.0" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="4.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.NET.Build.Containers" Version="0.4.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.2" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\UNOLib\UNOLib.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <Compile Update="UNODiscordEmojis.Designer.cs">
+    <Compile Update="src\UNODiscordEmojis.Designer.cs">
+      <DependentUpon>UNODiscordEmojis.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>UNODiscordEmojis.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
-    <EmbeddedResource Update="UNODiscordEmojis.resx">
+    <EmbeddedResource Update="src\UNODiscordEmojis.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>UNODiscordEmojis.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
 </Project>

@@ -160,7 +160,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (NotEnoughPlayersException)
         {
-            await ctx.CreateResponseAsync("Not enough players, lobby was deleted", false);
+            await ctx.CreateResponseAsync("Not enough players, lobby was deleted");
         }
     }
 
@@ -382,7 +382,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         else
         {
-            var authorTitle = $"{((DiscordPlayer)state.PreviousPlayer)?.User.Username}'s turn";
+            var authorTitle = $"{((DiscordPlayer)state.PreviousPlayer!).User.Username}'s turn";
             // Player JumpedIn
             if (state is { JumpedIn: true, PreviousPlayer: not null })
             {
@@ -404,7 +404,6 @@ public class UnoSlashCommands : ApplicationCommandModule
                 message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} card(s):\n";
                 message += MessageBuilder.PlayerHandToBackEmoji(state.PreviousPlayer);
                 message += "\n\n";
-                authorTitle = "";
             }
             // Cards were drawn
             if (state.WhoDrewCards != null)
@@ -416,7 +415,7 @@ public class UnoSlashCommands : ApplicationCommandModule
 
                     var users = Uno.GetDiscordUsers(ctx.Channel.Id);
                     var whoDrewCards = users.Find(user => users.IndexOf(user) == state.WhoDrewCards.Id);
-                    authorImgUrl = whoDrewCards.AvatarUrl;
+                    authorImgUrl = whoDrewCards!.AvatarUrl;
                 }
                 embedMessage.WithAuthor(authorTitle, null, authorImgUrl);
 
@@ -504,7 +503,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 {
                     if (!state.WaitingOnColorChange)
                     {
-                        cardImg += state.ColorChanged.ToString().ToLower();
+                        cardImg += state.ColorChanged.ToString()!.ToLower();
                         cardImg += "%20";
                     }
                     return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";

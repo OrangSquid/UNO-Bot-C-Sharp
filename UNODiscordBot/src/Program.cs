@@ -1,5 +1,4 @@
 ﻿using DSharpPlus;
-using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;

@@ -36,7 +36,11 @@ public static class Program
             Services = services
         });
 
+#if RELEASE
         slash.RegisterCommands<UnoSlashCommands>();
+#elif DEBUG
+        slash.RegisterCommands<UnoSlashCommands>(477149849632899072);
+#endif
 
         discord.GuildDownloadCompleted += DiscordOnGuildDownloadCompleted;
         discord.ChannelDeleted += DiscordOnChannelDeleted;

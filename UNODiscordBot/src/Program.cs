@@ -2,6 +2,9 @@
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
+#if RELEASE
+using Microsoft.Extensions.Logging;
+#endif
 using UNODiscordBot.Wrappers;
 
 namespace UNODiscordBot;
@@ -20,6 +23,9 @@ public static class Program
             Token = token,
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.AllUnprivileged
+#if RELEASE
+            , MinimumLogLevel = LogLevel.Critical
+#endif
         });
 
         _messageBuilder = new UnoMessageBuilder();

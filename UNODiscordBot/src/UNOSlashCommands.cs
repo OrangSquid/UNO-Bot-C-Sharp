@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Text;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using Microsoft.Extensions.DependencyInjection;
 using UNODiscordBot.Exceptions;
 using UNODiscordBot.Wrappers;
 using UNOLib;
@@ -13,8 +15,21 @@ namespace UNODiscordBot;
 public class UnoSlashCommands : ApplicationCommandModule
 {
 #pragma warning disable CS8618
-    public UnoLibWrapper Uno { get; set; }
-    public UnoMessageBuilder MessageBuilder { get; set; }
+    private UnoLibWrapper Uno { get; set; }
+    private UnoMessageBuilder MessageBuilder { get; set; }
+
+    public UnoSlashCommands(IServiceProvider serviceProvider)
+    {
+#if DEBUG
+        var stopwatch = Stopwatch.StartNew();
+#endif
+        Uno = serviceProvider.GetRequiredService<UnoLibWrapper>();
+        MessageBuilder = serviceProvider.GetRequiredService<UnoMessageBuilder>();
+#if DEBUG
+        stopwatch.Stop();
+        Console.WriteLine($"UnoSlashCommands loaded in {stopwatch.ElapsedMilliseconds}ms");
+#endif
+    }
 
     [SlashCommandGroup("settings", "Change the way the game plays")]
     public class SettingsCommands : ApplicationCommandModule
@@ -105,8 +120,11 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
+            var stopwatch = Stopwatch.StartNew();
             Uno.CreateGame(ctx.Channel.Id, ctx.User);
             await ctx.CreateResponseAsync("Lobby Created");
+            stopwatch.Stop();
+            Console.WriteLine($"New game created in {stopwatch.ElapsedMilliseconds}ms");
         }
         catch (GameAlreadyExistsException)
         {

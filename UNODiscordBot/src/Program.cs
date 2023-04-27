@@ -55,19 +55,17 @@ public static class Program
         await Task.Delay(-1);
     }
 
-    private static Task DiscordOnChannelDeleted(DiscordClient sender, ChannelDeleteEventArgs e)
+    private static async Task DiscordOnChannelDeleted(DiscordClient sender, ChannelDeleteEventArgs e)
     {
         _unoLibWrapper?.DeleteSettings(e.Channel.Id);
-        return Task.CompletedTask;
     }
 
-    private static Task DiscordOnChannelCreated(DiscordClient sender, ChannelCreateEventArgs e)
+    private static async Task DiscordOnChannelCreated(DiscordClient sender, ChannelCreateEventArgs e)
     {
         _unoLibWrapper?.SetSettings(e.Channel.Id);
-        return Task.CompletedTask;
     }
 
-    private static Task DiscordOnGuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs e)
+    private static async Task DiscordOnGuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs e)
     {
         _messageBuilder?.BuildEmojiDictionary(sender);
         foreach (var guild in e.Guilds)
@@ -77,6 +75,5 @@ public static class Program
                 _unoLibWrapper?.SetSettings(channel);
             }
         }
-        return Task.CompletedTask;
     }
 }

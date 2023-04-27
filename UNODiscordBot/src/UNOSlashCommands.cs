@@ -14,9 +14,8 @@ namespace UNODiscordBot;
 
 public class UnoSlashCommands : ApplicationCommandModule
 {
-#pragma warning disable CS8618
-    private UnoLibWrapper Uno { get; set; }
-    private UnoMessageBuilder MessageBuilder { get; set; }
+    private UnoLibWrapper Uno { get; }
+    private UnoMessageBuilder MessageBuilder { get; }
 
     public UnoSlashCommands(IServiceProvider serviceProvider)
     {
@@ -27,15 +26,19 @@ public class UnoSlashCommands : ApplicationCommandModule
         MessageBuilder = serviceProvider.GetRequiredService<UnoMessageBuilder>();
 #if DEBUG
         stopwatch.Stop();
-        Console.WriteLine($"UnoSlashCommands loaded in {stopwatch.ElapsedMilliseconds}ms");
+        Console.WriteLine($@"UnoSlashCommands loaded in {stopwatch.ElapsedMilliseconds}ms");
 #endif
     }
 
     [SlashCommandGroup("settings", "Change the way the game plays")]
     public class SettingsCommands : ApplicationCommandModule
     {
-        public UnoLibWrapper Uno { get; set; }
-#pragma warning restore CS8618
+        private UnoLibWrapper Uno { get; }
+
+        public SettingsCommands(IServiceProvider serviceProvider)
+        {
+            Uno = serviceProvider.GetRequiredService<UnoLibWrapper>();
+        }
 
         [SlashCommand("drawUntilPlayableCard", "Draw Until Playable Card")]
         public async Task DrawUntilPlayableCardCommand(InteractionContext ctx,
@@ -120,11 +123,8 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            var stopwatch = Stopwatch.StartNew();
             Uno.CreateGame(ctx.Channel.Id, ctx.User);
             await ctx.CreateResponseAsync("Lobby Created");
-            stopwatch.Stop();
-            Console.WriteLine($"New game created in {stopwatch.ElapsedMilliseconds}ms");
         }
         catch (GameAlreadyExistsException)
         {

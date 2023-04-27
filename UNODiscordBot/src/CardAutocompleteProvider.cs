@@ -8,9 +8,7 @@ namespace UNODiscordBot;
 
 public class CardAutocompleteProvider : IAutocompleteProvider
 {
-#pragma warning disable CS1998
     public async Task<IEnumerable<DiscordAutoCompleteChoice>> Provider(AutocompleteContext ctx)
-#pragma warning restore CS1998
     {
         var ulw = ctx.Services.GetService<UnoLibWrapper>();
         try

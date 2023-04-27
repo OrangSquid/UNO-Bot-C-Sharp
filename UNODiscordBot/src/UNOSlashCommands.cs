@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Text;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using Microsoft.Extensions.DependencyInjection;
 using UNODiscordBot.Exceptions;
 using UNODiscordBot.Wrappers;
 using UNOLib;
@@ -13,8 +15,21 @@ namespace UNODiscordBot;
 public class UnoSlashCommands : ApplicationCommandModule
 {
 #pragma warning disable CS8618
-    public UnoLibWrapper Uno { get; set; }
-    public UnoMessageBuilder MessageBuilder { get; set; }
+    private UnoLibWrapper Uno { get; set; }
+    private UnoMessageBuilder MessageBuilder { get; set; }
+
+    public UnoSlashCommands(IServiceProvider serviceProvider)
+    {
+#if DEBUG
+        var stopwatch = Stopwatch.StartNew();
+#endif
+        Uno = serviceProvider.GetRequiredService<UnoLibWrapper>();
+        MessageBuilder = serviceProvider.GetRequiredService<UnoMessageBuilder>();
+#if DEBUG
+        stopwatch.Stop();
+        Console.WriteLine($"UnoSlashCommands loaded in {stopwatch.ElapsedMilliseconds}ms");
+#endif
+    }
 
     [SlashCommandGroup("settings", "Change the way the game plays")]
     public class SettingsCommands : ApplicationCommandModule
@@ -105,8 +120,11 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
+            var stopwatch = Stopwatch.StartNew();
             Uno.CreateGame(ctx.Channel.Id, ctx.User);
             await ctx.CreateResponseAsync("Lobby Created");
+            stopwatch.Stop();
+            Console.WriteLine($"New game created in {stopwatch.ElapsedMilliseconds}ms");
         }
         catch (GameAlreadyExistsException)
         {
@@ -160,7 +178,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         catch (NotEnoughPlayersException)
         {
-            await ctx.CreateResponseAsync("Not enough players, lobby was deleted", false);
+            await ctx.CreateResponseAsync("Not enough players, lobby was deleted");
         }
     }
 
@@ -382,7 +400,7 @@ public class UnoSlashCommands : ApplicationCommandModule
         }
         else
         {
-            var authorTitle = $"{((DiscordPlayer)state.PreviousPlayer)?.User.Username}'s turn";
+            var authorTitle = $"{((DiscordPlayer)state.PreviousPlayer!).User.Username}'s turn";
             // Player JumpedIn
             if (state is { JumpedIn: true, PreviousPlayer: not null })
             {
@@ -404,7 +422,6 @@ public class UnoSlashCommands : ApplicationCommandModule
                 message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} card(s):\n";
                 message += MessageBuilder.PlayerHandToBackEmoji(state.PreviousPlayer);
                 message += "\n\n";
-                authorTitle = "";
             }
             // Cards were drawn
             if (state.WhoDrewCards != null)
@@ -416,7 +433,7 @@ public class UnoSlashCommands : ApplicationCommandModule
 
                     var users = Uno.GetDiscordUsers(ctx.Channel.Id);
                     var whoDrewCards = users.Find(user => users.IndexOf(user) == state.WhoDrewCards.Id);
-                    authorImgUrl = whoDrewCards.AvatarUrl;
+                    authorImgUrl = whoDrewCards!.AvatarUrl;
                 }
                 embedMessage.WithAuthor(authorTitle, null, authorImgUrl);
 
@@ -504,7 +521,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 {
                     if (!state.WaitingOnColorChange)
                     {
-                        cardImg += state.ColorChanged.ToString().ToLower();
+                        cardImg += state.ColorChanged.ToString()!.ToLower();
                         cardImg += "%20";
                     }
                     return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";

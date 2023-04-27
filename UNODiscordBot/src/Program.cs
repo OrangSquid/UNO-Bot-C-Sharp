@@ -1,8 +1,10 @@
 ﻿using DSharpPlus;
-using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
+#if RELEASE
+using Microsoft.Extensions.Logging;
+#endif
 using UNODiscordBot.Wrappers;
 
 namespace UNODiscordBot;
@@ -21,6 +23,9 @@ public static class Program
             Token = token,
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.AllUnprivileged
+#if RELEASE
+            , MinimumLogLevel = LogLevel.Critical
+#endif
         });
 
         _messageBuilder = new UnoMessageBuilder();
@@ -36,7 +41,11 @@ public static class Program
             Services = services
         });
 
+#if RELEASE
         slash.RegisterCommands<UnoSlashCommands>();
+#elif DEBUG
+        slash.RegisterCommands<UnoSlashCommands>(477149849632899072);
+#endif
 
         discord.GuildDownloadCompleted += DiscordOnGuildDownloadCompleted;
         discord.ChannelDeleted += DiscordOnChannelDeleted;

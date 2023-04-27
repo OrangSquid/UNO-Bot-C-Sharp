@@ -15,9 +15,16 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         var ulw = ctx.Services.GetService<UnoLibWrapper>();
         try
         {
-            var player = ulw.GetPlayer(ctx.Channel.Id, ctx.User);
+            var player = ulw!.GetPlayer(ctx.Channel.Id, ctx.User);
             var cardChoices = new List<DiscordAutoCompleteChoice>(player.NumCards);
-            cardChoices.AddRange(player.Select(card => new DiscordAutoCompleteChoice(card.ToString(), card.ToString())));
+            foreach (var card in player)
+            {
+                var optionString = ctx.Interaction.Data.Options.ElementAt(0).Value.ToString();
+                if (card.ToString().ToLower().Contains(optionString!.ToLower()))
+                {
+                    cardChoices.Add(new DiscordAutoCompleteChoice(card.ToString(), card.ToString()));
+                }
+            }
             return cardChoices;
         }
         catch (GameDoesNotExistException)

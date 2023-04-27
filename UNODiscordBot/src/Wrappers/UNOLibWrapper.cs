@@ -133,14 +133,17 @@ public class UnoLibWrapper
         {
             throw new GameDoesNotExistException();
         }
-        if(_channelLobbies[channelId].IndexOf(user) == -1)
+
+        if (_channelLobbies[channelId].IndexOf(user) == -1)
         {
             throw new PlayerDoesNotExistException();
         }
+#if RELEASE
         if (lobby.Count < 2)
         {
             throw new NotEnoughPlayersException();
         }
+#endif
         int nPlayers = lobby.Count;
         GameSystemFactoryWrapper gsf = new(nPlayers)
         {

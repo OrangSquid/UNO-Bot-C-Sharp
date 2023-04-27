@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace UNODiscordBot {
+namespace UNODiscordBot.src {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace UNODiscordBot {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("UNODiscordBot.UNODiscordEmojis", typeof(UNODiscordEmojis).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("UNODiscordBot.src.UNODiscordEmojis", typeof(UNODiscordEmojis).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

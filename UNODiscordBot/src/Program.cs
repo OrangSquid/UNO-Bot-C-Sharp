@@ -50,6 +50,8 @@ public static class Program
         discord.GuildDownloadCompleted += DiscordOnGuildDownloadCompleted;
         discord.ChannelDeleted += DiscordOnChannelDeleted;
         discord.ChannelCreated += DiscordOnChannelCreated;
+        discord.GuildCreated += DiscordOnGuildCreated;
+        discord.GuildDeleted += DiscordOnGuildDeleted;
 
         await discord.ConnectAsync();
         await Task.Delay(-1);
@@ -63,6 +65,22 @@ public static class Program
     private static async Task DiscordOnChannelCreated(DiscordClient sender, ChannelCreateEventArgs e)
     {
         _unoLibWrapper?.SetSettings(e.Channel.Id);
+    }
+
+    private static async Task DiscordOnGuildCreated(DiscordClient sender, GuildCreateEventArgs e)
+    {
+        foreach (var channel in e.Guild.Channels.Keys)
+        {
+            _unoLibWrapper?.SetSettings(channel);
+        }
+    }
+
+    private static async Task DiscordOnGuildDeleted(DiscordClient sender, GuildDeleteEventArgs e)
+    {
+        foreach (var channel in e.Guild.Channels.Keys)
+        {
+            _unoLibWrapper?.DeleteSettings(channel);
+        }
     }
 
     private static async Task DiscordOnGuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs e)

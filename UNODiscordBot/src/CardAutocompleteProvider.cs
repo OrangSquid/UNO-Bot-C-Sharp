@@ -8,6 +8,17 @@ namespace UNODiscordBot;
 
 public class CardAutocompleteProvider : IAutocompleteProvider
 {
+    private static readonly DiscordAutoCompleteChoice[] NoGames;
+
+    static CardAutocompleteProvider()
+    {
+        NoGames = new[]
+        {
+            new DiscordAutoCompleteChoice("No games available", " ")
+        };
+    }
+
+
     public async Task<IEnumerable<DiscordAutoCompleteChoice>> Provider(AutocompleteContext ctx)
     {
         var ulw = ctx.Services.GetService<UnoLibWrapper>();
@@ -15,22 +26,16 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         {
             var player = ulw!.GetPlayer(ctx.Channel.Id, ctx.User);
             var cardChoices = new List<DiscordAutoCompleteChoice>(player.NumCards);
-            foreach (var card in player)
-            {
-                var optionString = ctx.Interaction.Data.Options.ElementAt(0).Value.ToString();
-                if (card.ToString().ToLower().Contains(optionString!.ToLower()))
-                {
-                    cardChoices.Add(new DiscordAutoCompleteChoice(card.ToString(), card.ToString()));
-                }
-            }
+            cardChoices.AddRange(
+                from card in player 
+                let optionString = ctx.Interaction.Data.Options.ElementAt(0).Value.ToString() 
+                where card.ToString().ToLower().Contains(optionString!.ToLower()) 
+                select new DiscordAutoCompleteChoice(card.ToString(), card.ToString()));
             return cardChoices;
         }
         catch (GameDoesNotExistException)
         {
-            return new[]
-            {
-                new DiscordAutoCompleteChoice("No games available", " ")
-            };
+            return NoGames;
         }
     }
 }

@@ -145,16 +145,15 @@ public class UnoLibWrapper
         }
 #endif
         int nPlayers = lobby.Count;
-        GameSystemFactoryWrapper gsf = new(nPlayers)
-        {
-            DrawUntilPlayableCard = _channelSettings[channelId].DrawUntilPlayableCard,
-            StackPlusTwo = _channelSettings[channelId].StackPlusTwo,
-            MustPlay = _channelSettings[channelId].MustPlay,
-            JumpIn = _channelSettings[channelId].JumpIn,
-            UnoPenalty = _channelSettings[channelId].UnoPenalty
-        };
-        gsf.CreatePlayers(lobby);
-        var gs = gsf.Build();
+        var gs = new GameSystemBuilderWrapper()
+            .CreatePlayers(nPlayers)
+            .WithDrawUntilPlayable(_channelSettings[channelId].DrawUntilPlayableCard)
+            .WithStackPlusTwo(_channelSettings[channelId].StackPlusTwo)
+            .WithMustPlay(_channelSettings[channelId].MustPlay)
+            .WithJumpIn(_channelSettings[channelId].JumpIn)
+            .WithUnoPenalty(_channelSettings[channelId].UnoPenalty)
+            .Build();
+
         _channelGames.Add(channelId, new GameStruct()
         {
             Gs = gs,

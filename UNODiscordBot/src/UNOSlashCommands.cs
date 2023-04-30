@@ -472,8 +472,8 @@ public class UnoSlashCommands : ApplicationCommandModule
             fieldValue += UnoMessageBuilder.PlayerHandToBackEmoji(state.CurrentPlayer);
             embedMessage.AddField(fieldTitle, fieldValue);
         }
-        
-        
+
+
         await ctx.CreateResponseAsync(embedMessage
             .WithThumbnail(((ICardWrapper)state.OnTable).Url)
             .WithDescription(message)

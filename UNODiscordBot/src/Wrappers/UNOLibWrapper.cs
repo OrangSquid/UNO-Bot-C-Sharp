@@ -24,7 +24,7 @@ public class UnoLibWrapper
     /// <param name="channelId"></param>
     public void SetSettings(ulong channelId)
     {
-        _channelSettings.Add(channelId, 
+        _channelSettings.Add(channelId,
             new GameSettings
             {
                 DrawUntilPlayableCard = false,

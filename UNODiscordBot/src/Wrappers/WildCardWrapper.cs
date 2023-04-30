@@ -13,12 +13,12 @@ internal class WildCardWrapper : WildCard, ICardWrapper
 
     public WildCardWrapper(WildCardSymbols symbol) : base(symbol)
     {
-        Url = $"https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/{HttpUtility.UrlEncode(ToString())}";
+        Url = $"https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/main/deck/{Uri.EscapeDataString(ToString())}.png";
     }
 
     private WildCardWrapper(CardColors color, WildCardSymbols symbol) : base(color, symbol)
     {
-        Url = $"https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/{HttpUtility.UrlEncode(ToString())}";
+        Url = $"https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/main/deck/{Uri.EscapeDataString(ToString())}.png";
     }
 
     public void WrapUnderlyingColoredWildCard(Dictionary<CardColors, DiscordColor> discordColors)

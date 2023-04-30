@@ -5,20 +5,43 @@
 /// </summary>
 public class WildCard : ICard
 {
-    public const string ActualColor = "Wild";
+    public CardColors Color { get; }
+    public WildCardSymbols Symbol { get; }
 
-    public CardColors Color { get; set; }
-    public required WildCardSymbols Symbol { get; init; }
+    protected List<WildCard>? ColoredWildCards;
 
-    public WildCard()
+    private readonly string _stringRepresentation;
+
+    public WildCard(WildCardSymbols symbol) : this(CardColors.None, symbol)
     {
-        Color = CardColors.Red;
+        InitializeColoredWildCards();
+    }
+
+    protected WildCard(CardColors color, WildCardSymbols symbol)
+    {
+        Color = color;
+        Symbol = symbol;
+        _stringRepresentation = color == CardColors.None ? "Wild " + Symbol : color + " Wild " + Symbol;
+    }
+
+    private void InitializeColoredWildCards()
+    {
+        ColoredWildCards = new List<WildCard>(4);
+        foreach (CardColors color in Enum.GetValuesAsUnderlyingType<CardColors>())
+        {
+            ColoredWildCards.Add(new WildCard(color, Symbol));
+        }
+    }
+
+    public WildCard ChangeColor(string color)
+    {
+        return ColoredWildCards!.Find(card => card.Color == Enum.Parse<CardColors>(color))!;
     }
 
     public bool CanBePlayed(ICard card) => card is WildCard || card.Color == Color;
 
     public override string ToString()
     {
-        return ActualColor + " " + Symbol;
+        return _stringRepresentation;
     }
 }

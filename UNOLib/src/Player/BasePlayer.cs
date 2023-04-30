@@ -29,14 +29,15 @@ public class BasePlayer : IPlayer
             _deck.Add(card.ToString(), cardsSameValue);
         }
         cardsSameValue.Push(card);
-        // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
-        if (card is ColorCard { Symbol: ColorCardSymbols.PlusTwo })
+        switch (card)
         {
-            _numPlusTwoCards++;
-        }
-        else if (card is WildCard { Symbol: WildCardSymbols.PlusFour })
-        {
-            _numWildPlusFourCards++;
+            // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
+            case ColorCard { Symbol: ColorCardSymbols.PlusTwo }:
+                _numPlusTwoCards++;
+                break;
+            case WildCard { Symbol: WildCardSymbols.PlusFour }:
+                _numWildPlusFourCards++;
+                break;
         }
         NumCards++;
     }
@@ -54,14 +55,15 @@ public class BasePlayer : IPlayer
         {
             _deck.Remove(cardId);
         }
-        // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
-        if (card is ColorCard { Symbol: ColorCardSymbols.PlusTwo })
+        switch (card)
         {
-            _numPlusTwoCards--;
-        }
-        else if (card is WildCard { Symbol: WildCardSymbols.PlusFour })
-        {
-            _numWildPlusFourCards--;
+            // Update _numPlusTwoCards, _numWildPlusFourCards and _numCards
+            case ColorCard { Symbol: ColorCardSymbols.PlusTwo }:
+                _numPlusTwoCards--;
+                break;
+            case WildCard { Symbol: WildCardSymbols.PlusFour }:
+                _numWildPlusFourCards--;
+                break;
         }
         NumCards--;
         return NumCards == 1;

@@ -5,21 +5,30 @@
 /// </summary>
 public class ColorCard : ICard
 {
-    public required CardColors Color { get; init; }
-    public required ColorCardSymbols Symbol { get; init; }
+    public CardColors Color { get; }
+    public ColorCardSymbols Symbol { get; }
+
+    private readonly string _stringRepresentation;
+
+    public ColorCard(CardColors color, ColorCardSymbols symbol)
+    {
+        Color = color;
+        Symbol = symbol;
+
+        _stringRepresentation = 
+            Color + 
+            " " + 
+            Symbol switch
+        {
+            ColorCardSymbols.Reverse or ColorCardSymbols.PlusTwo or ColorCardSymbols.Skip => Symbol.ToString(),
+            _ => Enum.Format(typeof(ColorCardSymbols), Symbol, "d")
+        };
+    }
 
     public bool CanBePlayed(ICard card) => card is WildCard || card.Color == Color || card is ColorCard cCard && cCard.Symbol == Symbol;
 
     public override string ToString()
     {
-        string message = Color + " ";
-
-        message += Symbol switch
-        {
-            ColorCardSymbols.Reverse or ColorCardSymbols.PlusTwo or ColorCardSymbols.Skip => Symbol.ToString(),
-            _ => Enum.Format(typeof(ColorCardSymbols), Symbol, "d")
-        };
-
-        return message;
+        return _stringRepresentation;
     }
 }

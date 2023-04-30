@@ -73,16 +73,14 @@ public static class Program
 
         Console.WriteLine("numPlayers");
         var nPlayers = Convert.ToInt32(Console.ReadLine());
-        GameSystemFactory gsf = new(nPlayers)
-        {
-            DrawUntilPlayableCard = drawUntilPlayableCard,
-            StackPlusTwo = stackPlusTwo,
-            MustPlay = mustPlay,
-            JumpIn = jumpIn,
-            UnoPenalty = unoPenalty
-        };
-        gsf.CreatePlayers();
-        _uno = gsf.Build();
+        var gsf = new GameSystemBuilder()
+            .CreatePlayers(nPlayers)
+            .WithDrawUntilPlayable(drawUntilPlayableCard)
+            .WithStackPlusTwo(stackPlusTwo)
+            .WithMustPlay(mustPlay)
+            .WithJumpIn(jumpIn)
+            .WithUnoPenalty(unoPenalty)
+            .Build();
 
         Console.WriteLine("Game created");
         StateInterpreter(true);

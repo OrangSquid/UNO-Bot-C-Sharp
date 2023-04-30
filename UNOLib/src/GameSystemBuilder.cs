@@ -29,7 +29,7 @@ public class GameSystemBuilder
         AllCards = new List<ICard>(NumberCards);
         foreach (CardColors color in Enum.GetValuesAsUnderlyingType<CardColors>())
         {
-            if(color == CardColors.None) continue;
+            if (color == CardColors.None) continue;
 
             foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
             {

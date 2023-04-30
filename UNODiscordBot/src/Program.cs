@@ -11,7 +11,6 @@ namespace UNODiscordBot;
 
 public static class Program
 {
-    private static UnoMessageBuilder? _messageBuilder;
     private static UnoLibWrapper? _unoLibWrapper;
 
     public static async Task Main()
@@ -28,12 +27,10 @@ public static class Program
 #endif
         });
 
-        _messageBuilder = new UnoMessageBuilder();
         _unoLibWrapper = new UnoLibWrapper();
 
         var services = new ServiceCollection()
             .AddSingleton(_unoLibWrapper)
-            .AddSingleton(_messageBuilder)
             .BuildServiceProvider();
 
         var slash = discord.UseSlashCommands(new SlashCommandsConfiguration()
@@ -69,7 +66,7 @@ public static class Program
 
     private static async Task DiscordOnGuildCreated(DiscordClient sender, GuildCreateEventArgs e)
     {
-        foreach (var channel in e.Guild.Channels.Keys)
+        foreach (ulong channel in e.Guild.Channels.Keys)
         {
             _unoLibWrapper?.SetSettings(channel);
         }
@@ -77,7 +74,7 @@ public static class Program
 
     private static async Task DiscordOnGuildDeleted(DiscordClient sender, GuildDeleteEventArgs e)
     {
-        foreach (var channel in e.Guild.Channels.Keys)
+        foreach (ulong channel in e.Guild.Channels.Keys)
         {
             _unoLibWrapper?.DeleteSettings(channel);
         }
@@ -85,7 +82,7 @@ public static class Program
 
     private static async Task DiscordOnGuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs e)
     {
-        _messageBuilder?.BuildEmojiDictionary(sender);
+        UnoMessageBuilder.BuildEmojiDictionary(sender);
         foreach (var guild in e.Guilds)
         {
             foreach (ulong channel in guild.Value.Channels.Keys)

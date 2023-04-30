@@ -8,7 +8,8 @@ public enum CardColors
     Red,
     Green,
     Yellow,
-    Blue
+    Blue,
+    None
 }
 
 /// <summary>

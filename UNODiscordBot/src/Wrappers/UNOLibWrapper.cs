@@ -144,9 +144,8 @@ public class UnoLibWrapper
             throw new NotEnoughPlayersException();
         }
 #endif
-        int nPlayers = lobby.Count;
         var gs = new GameSystemBuilderWrapper()
-            .CreatePlayers(nPlayers)
+            .CreatePlayers(lobby)
             .WithDrawUntilPlayable(_channelSettings[channelId].DrawUntilPlayableCard)
             .WithStackPlusTwo(_channelSettings[channelId].StackPlusTwo)
             .WithMustPlay(_channelSettings[channelId].MustPlay)
@@ -175,7 +174,7 @@ public class UnoLibWrapper
         game.Gs.CardPlay(GetPlayerId(game, player), card);
 
         if (game.Gs.State.GameFinished)
-            EndGame(channelId);
+            EndGame(channelId, player);
 
         return game.Gs.State;
     }
@@ -201,9 +200,24 @@ public class UnoLibWrapper
         return game.Gs.State;
     }
 
-    public bool EndGame(ulong channelId)
+    public void EndGame(ulong channelId, DiscordUser player)
     {
-        return _channelGames.Remove(channelId);
+        _channelLobbies.TryGetValue(channelId, out var lobby);
+        _channelGames.TryGetValue(channelId, out var game);
+        if (lobby == null && game.Gs == null)
+        {
+            throw new GameDoesNotExistException();
+        }
+        if (lobby != null && lobby.IndexOf(player) == -1)
+        {
+            throw new PlayerDoesNotExistException();
+        }
+        if (game.Gs != null && game.Players.IndexOf(player) == -1)
+        {
+            throw new PlayerDoesNotExistException();
+        }
+        _channelGames.Remove(channelId);
+        _channelLobbies.Remove(channelId);
     }
 
     private IPlayer GetPlayer(GameStruct game, DiscordUser player)

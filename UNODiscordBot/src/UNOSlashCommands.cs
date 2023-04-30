@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
@@ -15,19 +14,10 @@ namespace UNODiscordBot;
 public class UnoSlashCommands : ApplicationCommandModule
 {
     private UnoLibWrapper Uno { get; }
-    private UnoMessageBuilder MessageBuilder { get; }
 
     public UnoSlashCommands(IServiceProvider serviceProvider)
     {
-#if DEBUG
-        var stopwatch = Stopwatch.StartNew();
-#endif
         Uno = serviceProvider.GetRequiredService<UnoLibWrapper>();
-        MessageBuilder = serviceProvider.GetRequiredService<UnoMessageBuilder>();
-#if DEBUG
-        stopwatch.Stop();
-        Console.WriteLine($@"UnoSlashCommands loaded in {stopwatch.ElapsedMilliseconds}ms");
-#endif
     }
 
     [SlashCommandGroup("settings", "Change the way the game plays")]
@@ -315,7 +305,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 var otherPlayer = Uno.GetPlayer(ctx.Channel.Id, user);
 
                 message.Append($"{user.Username}: ");
-                message.Append(MessageBuilder.PlayerHandToBackEmoji(otherPlayer));
+                message.Append(UnoMessageBuilder.PlayerHandToBackEmoji(otherPlayer));
                 message.Append('\n');
             }
             message.Append("Here's your current deck:\n");
@@ -323,7 +313,7 @@ public class UnoSlashCommands : ApplicationCommandModule
 
             // Shows the cards the player has
             message.Clear();
-            message.Append(MessageBuilder.PlayerHandToFrontEmoji(checkingPlayer));
+            message.Append(UnoMessageBuilder.PlayerHandToFrontEmoji(checkingPlayer));
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(message.ToString()).AsEphemeral());
         }
         catch (GameDoesNotExistException)
@@ -370,7 +360,7 @@ public class UnoSlashCommands : ApplicationCommandModule
     {
         try
         {
-            Uno.EndGame(ctx.Channel.Id);
+            Uno.EndGame(ctx.Channel.Id, ctx.User);
             await ctx.CreateResponseAsync("Game finished");
         }
         catch (GameDoesNotExistException)
@@ -390,7 +380,6 @@ public class UnoSlashCommands : ApplicationCommandModule
         string authorImgUrl = "";
         string fieldTitle = "";
         string fieldValue = "";
-        string imageUrl = "https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/";
         DiscordEmbedBuilder embedMessage = new();
 
         if (newGame)
@@ -420,7 +409,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 }
                 message += "\n";
                 message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} card(s):\n";
-                message += MessageBuilder.PlayerHandToBackEmoji(state.PreviousPlayer);
+                message += UnoMessageBuilder.PlayerHandToBackEmoji(state.PreviousPlayer);
                 message += "\n\n";
             }
             // Cards were drawn
@@ -438,7 +427,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 embedMessage.WithAuthor(authorTitle, null, authorImgUrl);
 
                 fieldTitle += $"{((DiscordPlayer)state.WhoDrewCards).User.Username}'s card(s):\n";
-                fieldValue += MessageBuilder.PlayerHandToBackEmoji(state.WhoDrewCards);
+                fieldValue += UnoMessageBuilder.PlayerHandToBackEmoji(state.WhoDrewCards);
                 embedMessage.AddField(fieldTitle, fieldValue);
                 fieldTitle = "";
                 fieldValue = "";
@@ -480,66 +469,16 @@ public class UnoSlashCommands : ApplicationCommandModule
         if (state.NewTurn)
         {
             fieldTitle += $"Your turn now: {((DiscordPlayer)state.CurrentPlayer).User.Username}\n";
-            fieldValue += MessageBuilder.PlayerHandToBackEmoji(state.CurrentPlayer);
+            fieldValue += UnoMessageBuilder.PlayerHandToBackEmoji(state.CurrentPlayer);
             embedMessage.AddField(fieldTitle, fieldValue);
         }
-
-        string colorHex;
-        if (state.WaitingOnColorChange)
-        {
-            colorHex = "#000000";
-        }
-        else
-        {
-            colorHex = state.OnTable.Color switch
-            {
-                CardColors.Red => "#FF5555",
-                CardColors.Green => "#55AA55",
-                CardColors.Yellow => "#FFAA00",
-                CardColors.Blue => "#5555FF",
-                _ => "#000000",
-            };
-        }
-
-        imageUrl += CardUrl(state);
+        
+        
         await ctx.CreateResponseAsync(embedMessage
-            .WithThumbnail(imageUrl)
+            .WithThumbnail(((ICardWrapper)state.OnTable).Url)
             .WithDescription(message)
             .WithTimestamp(DateTime.Now)
-            .WithColor(new DiscordColor(colorHex))
+            .WithColor(((ICardWrapper)state.OnTable).DiscordColor)
             );
-    }
-
-    private static string CardUrl(GameState state)
-    {
-        var card = state.OnTable;
-        var cardImg = "";
-
-        switch (card)
-        {
-            case WildCard wc:
-                {
-                    if (!state.WaitingOnColorChange)
-                    {
-                        cardImg += state.ColorChanged.ToString()!.ToLower();
-                        cardImg += "%20";
-                    }
-                    return cardImg + "wild%20" + wc.Symbol.ToString().ToLower() + ".png";
-                }
-            case ColorCard cc:
-                {
-                    cardImg += cc.Color.ToString().ToLower() + "%20";
-
-                    if (cc.Symbol.Equals(ColorCardSymbols.Reverse) || cc.Symbol.Equals(ColorCardSymbols.PlusTwo) || cc.Symbol.Equals(ColorCardSymbols.Skip))
-                        cardImg += cc.Symbol.ToString().ToLower();
-                    else
-                        cardImg += Enum.Format(typeof(ColorCardSymbols), cc.Symbol, "d");
-                    cardImg += ".png";
-
-                    return cardImg;
-                }
-            default:
-                return "";
-        }
     }
 }

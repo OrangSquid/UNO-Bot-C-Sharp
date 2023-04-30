@@ -27,10 +27,11 @@ public class CardAutocompleteProvider : IAutocompleteProvider
             var player = ulw!.GetPlayer(ctx.Channel.Id, ctx.User);
             var cardChoices = new List<DiscordAutoCompleteChoice>(player.NumCards);
             cardChoices.AddRange(
-                from card in player 
-                let optionString = ctx.Interaction.Data.Options.ElementAt(0).Value.ToString() 
-                where card.ToString().ToLower().Contains(optionString!.ToLower()) 
-                select new DiscordAutoCompleteChoice(card.ToString(), card.ToString()));
+                from card in player
+                let optionString = ctx.Interaction.Data.Options.ElementAt(0).Value.ToString()
+                where card.ToString().ToLower().Contains(optionString!.ToLower())
+                select ((ICardWrapper)card).Choice
+            );
             return cardChoices;
         }
         catch (GameDoesNotExistException)

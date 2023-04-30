@@ -22,8 +22,7 @@ public class GameSystem : IGameSystem
     private GameState _state;
 
     public GameState State => _state;
-
-    // TODO make this a guided builder
+    
     internal GameSystem(List<IPlayer> playersByOrder, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
         IStackStyle stackStyle, bool jumpIn, int unoPenalty)
     {
@@ -39,7 +38,10 @@ public class GameSystem : IGameSystem
         }
 
         var startingCard = _drawStyle.Draw();
-        while (startingCard is WildCard or ColorCard { Symbol: ColorCardSymbols.Skip or ColorCardSymbols.PlusTwo or ColorCardSymbols.Reverse })
+        while (startingCard is WildCard or ColorCard
+               {
+                   Symbol: ColorCardSymbols.Skip or ColorCardSymbols.PlusTwo or ColorCardSymbols.Reverse
+               })
         {
             _drawStyle.Push(startingCard);
             startingCard = _drawStyle.Draw();
@@ -188,7 +190,8 @@ public class GameSystem : IGameSystem
         {
             throw new NotPlayersTurnException();
         }
-        wildCard.Color = Enum.Parse<CardColors>(color);
+        _state.OnTable = wildCard.ChangeColor(color); 
+        _drawStyle.Push(wildCard);
         _state.ColorChanged = wildCard.Color;
         _state.WaitingOnColorChange = false;
         SetNextPlayer();

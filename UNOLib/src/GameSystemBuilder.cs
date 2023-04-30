@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using UNOLib.Cards;
+﻿using UNOLib.Cards;
 using UNOLib.DrawStyle;
 using UNOLib.Player;
 using UNOLib.StackStyles;
@@ -9,13 +8,13 @@ namespace UNOLib;
 public class GameSystemBuilder
 {
     private const int NumberCards = 108;
-    private const int NumberOfZeros = 1;
-    private const int NumberOfEachColorCard = 2;
-    private const int NumberOfEachWildCard = 4;
+    protected const int NumberOfZeros = 1;
+    protected const int NumberOfEachColorCard = 2;
+    protected const int NumberOfEachWildCard = 4;
     private const int MaxPlayers = 6;
 
-    private static readonly Dictionary<string, ICard> AllCardsDict;
-    private static readonly List<ICard> AllCards;
+    protected static readonly Dictionary<string, ICard> AllCardsDict;
+    protected static readonly List<ICard> AllCards;
     protected readonly List<IPlayer> PlayersByOrder;
 
     private IDrawStyle? _drawStyle;
@@ -30,13 +29,11 @@ public class GameSystemBuilder
         AllCards = new List<ICard>(NumberCards);
         foreach (CardColors color in Enum.GetValuesAsUnderlyingType<CardColors>())
         {
+            if(color == CardColors.None) continue;
+
             foreach (ColorCardSymbols symbol in Enum.GetValuesAsUnderlyingType<ColorCardSymbols>())
             {
-                ICard card = new ColorCard()
-                {
-                    Color = color,
-                    Symbol = symbol
-                };
+                ICard card = new ColorCard(color, symbol);
                 AllCardsDict.Add(card.ToString(), card);
                 int i = symbol == ColorCardSymbols.Zero ? NumberOfZeros : NumberOfEachColorCard;
                 for (; i > 0; i--)
@@ -47,16 +44,18 @@ public class GameSystemBuilder
         }
         foreach (WildCardSymbols symbol in Enum.GetValuesAsUnderlyingType<WildCardSymbols>())
         {
-            ICard card = new WildCard
-            {
-                Symbol = symbol
-            };
+            ICard card = new WildCard(symbol);
             AllCardsDict.Add(card.ToString(), card);
             for (var i = 0; i < NumberOfEachWildCard; i++)
             {
                 AllCards.Add(card);
             }
         }
+    }
+
+    protected static void ForceCards()
+    {
+
     }
 
     public GameSystemBuilder()

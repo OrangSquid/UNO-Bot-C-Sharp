@@ -16,6 +16,8 @@ internal abstract class AbstractDrawStyle : IDrawStyle
 
     public void Push(ICard card)
     {
+        if(card is not WildCard { Color: CardColors.None }) 
+            return;
         _playedCards.Add(card);
     }
 

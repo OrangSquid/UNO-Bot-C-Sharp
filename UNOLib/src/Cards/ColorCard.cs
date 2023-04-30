@@ -1,22 +1,24 @@
-﻿using System.Drawing;
-
-namespace UNOLib.Cards;
+﻿namespace UNOLib.Cards;
 
 /// <summary>
 /// Color Cards
 /// </summary>
 public class ColorCard : ICard
 {
-    public required CardColors Color { get; init; }
-    public required ColorCardSymbols Symbol { get; init; }
+    public CardColors Color { get; }
+    public ColorCardSymbols Symbol { get; }
 
     private readonly string _stringRepresentation;
 
-    public ColorCard() {
+    public ColorCard(CardColors color, ColorCardSymbols symbol)
+    {
+        Color = color;
+        Symbol = symbol;
 
-        _stringRepresentation = Color + " ";
-
-        _stringRepresentation += Symbol switch
+        _stringRepresentation = 
+            Color + 
+            " " + 
+            Symbol switch
         {
             ColorCardSymbols.Reverse or ColorCardSymbols.PlusTwo or ColorCardSymbols.Skip => Symbol.ToString(),
             _ => Enum.Format(typeof(ColorCardSymbols), Symbol, "d")

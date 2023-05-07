@@ -374,16 +374,15 @@ public class UnoSlashCommands : ApplicationCommandModule
     //TODO refactor this shit
     private async Task StateInterpreter(bool newGame, GameState state, BaseContext ctx)
     {
-        string message = "";
-        string authorImgUrl = "";
-        string fieldTitle = "";
-        string fieldValue = "";
+        var message = new StringBuilder();
+        var fieldTitle = new StringBuilder();
+        var fieldValue = new StringBuilder();
         DiscordEmbedBuilder embedMessage = new();
 
         if (newGame)
         {
             embedMessage.WithTitle("Game started\n");
-            message += $"Card on table: {state.OnTable}\n";
+            message.Append($"Card on table: {state.OnTable}\n");
         }
         else
         {
@@ -397,81 +396,77 @@ public class UnoSlashCommands : ApplicationCommandModule
             if (state.CardsPlayed.Count != 0 && state.PreviousPlayer != null)
             {
                 if (!state.JumpedIn)
-                    message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n";
+                    message.Append($"{((DiscordPlayer)state.PreviousPlayer).User.Username} played:\n");
 
                 embedMessage.WithAuthor(authorTitle, null, ctx.User.AvatarUrl);
                 foreach (ICard card in state.CardsPlayed)
                 {
-                    message += card;
-                    message += "\n";
+                    message.Append(card);
+                    message.Append("\n");
                 }
-                message += "\n";
-                message += $"{((DiscordPlayer)state.PreviousPlayer).User.Username} card(s):\n";
-                message += UnoMessageBuilder.PlayerHandToBackEmoji(state.PreviousPlayer);
-                message += "\n\n";
+                message.Append("\n");
+                message.Append($"{((DiscordPlayer)state.PreviousPlayer).User.Username} card(s):\n");
+                message.Append(UnoMessageBuilder.PlayerHandToBackEmoji(state.PreviousPlayer));
+                message.Append("\n\n");
             }
             // Cards were drawn
             if (state.WhoDrewCards != null)
             {
                 authorTitle = $"drew {state.CardsDrawn} card(s)\n";
-                authorImgUrl += ctx.User.AvatarUrl;
-                if (state.OnTable is WildCard { Symbol: WildCardSymbols.PlusFour } or ColorCard { Symbol: ColorCardSymbols.PlusTwo })
-                {
-                    authorImgUrl = ((DiscordPlayer)state.WhoDrewCards).User.AvatarUrl;
-                }
+                string authorImgUrl = state.OnTable is WildCard { Symbol: WildCardSymbols.PlusFour } or ColorCard { Symbol: ColorCardSymbols.PlusTwo } ? ((DiscordPlayer)state.WhoDrewCards).User.AvatarUrl : ctx.User.AvatarUrl;
                 embedMessage.WithAuthor(authorTitle, null, authorImgUrl);
 
-                fieldTitle += $"{((DiscordPlayer)state.WhoDrewCards).User.Username}'s card(s):\n";
-                fieldValue += UnoMessageBuilder.PlayerHandToBackEmoji(state.WhoDrewCards);
-                embedMessage.AddField(fieldTitle, fieldValue);
-                fieldTitle = "";
-                fieldValue = "";
+                fieldTitle.Append($"{((DiscordPlayer)state.WhoDrewCards).User.Username}'s card(s):\n");
+                fieldValue.Append(UnoMessageBuilder.PlayerHandToBackEmoji(state.WhoDrewCards));
+                embedMessage.AddField(fieldTitle.ToString(), fieldValue.ToString());
+                fieldTitle.Clear();
+                fieldValue.Clear();
             }
             // Players were skipped
             if (state.PlayersSkipped.Count != 0)
             {
-                message += "These Players were skipped: \n";
+                message.Append("These Players were skipped: \n");
                 foreach (IPlayer player in state.PlayersSkipped)
                 {
-                    message += $"   Player {((DiscordPlayer)player).User.Username}\n";
+                    message.Append($"   Player {((DiscordPlayer)player).User.Username}\n");
                 }
-                message += "\n";
+                message.Append("\n");
             }
             // The order was reversed
             if (state.JustReversedOrder)
             {
-                message += "The order has been reversed!\n";
+                message.Append("The order has been reversed!\n");
             }
             // Waiting for the color to change
             if (state.WaitingOnColorChange)
             {
-                message += $"Waiting for Player {((DiscordPlayer)state.CurrentPlayer).User.Username} to choose a color...\n";
+                message.Append($"Waiting for Player {((DiscordPlayer)state.CurrentPlayer).User.Username} to choose a color...\n");
             }
             if (state.ColorChanged != null)
             {
-                message += $"Color changed to: {state.ColorChanged}\n";
+                message.Append($"Color changed to: {state.ColorChanged}\n");
             }
             if (state is { HasSkipped: true, PreviousPlayer: not null })
             {
-                message += $"Player {((DiscordPlayer)state.PreviousPlayer).User.Username} has skipped their turn\n";
+                message.Append($"Player {((DiscordPlayer)state.PreviousPlayer).User.Username} has skipped their turn\n");
             }
             if (state.GameFinished)
             {
-                message += "Game has ended\n";
+                message.Append("Game has ended\n");
             }
         }
 
         if (state.NewTurn)
         {
-            fieldTitle += $"Your turn now: {((DiscordPlayer)state.CurrentPlayer).User.Username}\n";
-            fieldValue += UnoMessageBuilder.PlayerHandToBackEmoji(state.CurrentPlayer);
-            embedMessage.AddField(fieldTitle, fieldValue);
+            fieldTitle.Append($"Your turn now: {((DiscordPlayer)state.CurrentPlayer).User.Username}\n");
+            fieldValue.Append(UnoMessageBuilder.PlayerHandToBackEmoji(state.CurrentPlayer));
+            embedMessage.AddField(fieldTitle.ToString(), fieldValue.ToString());
         }
         
         
         await ctx.CreateResponseAsync(embedMessage
             .WithThumbnail(((ICardWrapper)state.OnTable).Url)
-            .WithDescription(message)
+            .WithDescription(message.ToString())
             .WithTimestamp(DateTime.Now)
             .WithColor(((ICardWrapper)state.OnTable).DiscordColor)
             );

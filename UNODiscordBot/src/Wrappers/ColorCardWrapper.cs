@@ -13,6 +13,6 @@ internal class ColorCardWrapper : ColorCard, ICardWrapper
 
     public ColorCardWrapper(CardColors colors, ColorCardSymbols symbol) : base(colors, symbol)
     {
-        Url = $"https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/discord_bot/deck/{HttpUtility.UrlEncode(ToString())}";
+        Url = $"https://raw.githubusercontent.com/OrangSquid/UNO-Bot-C-Sharp/main/deck/{Uri.EscapeDataString(ToString())}.png";
     }
 }

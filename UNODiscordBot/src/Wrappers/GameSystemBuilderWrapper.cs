@@ -36,6 +36,11 @@ internal class GameSystemBuilderWrapper : GameSystemBuilder
         return this;
     }
 
+    public override GameSystemWrapper Build()
+    {
+        return new GameSystemWrapper(PlayersByOrder, AllCardsDict, DrawStyle!, MustPlay, StackStyle!, JumpIn, UnoPenalty);
+    }
+
     internal static void WrapCards(BaseDiscordClient client, ResourceSet rs)
     {
         AllCards.Clear();

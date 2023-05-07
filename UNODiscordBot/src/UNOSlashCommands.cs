@@ -296,16 +296,14 @@ public class UnoSlashCommands : ApplicationCommandModule
         try
         {
             var message = new StringBuilder();
-            var users = Uno.GetDiscordUsers(ctx.Channel.Id);
+            var users = Uno.GetGame(ctx.Channel.Id);
             var checkingPlayer = Uno.GetPlayer(ctx.Channel.Id, ctx.User);
 
             // Create string with all the players cards
             foreach (var user in users)
             {
-                var otherPlayer = Uno.GetPlayer(ctx.Channel.Id, user);
-
-                message.Append($"{user.Username}: ");
-                message.Append(UnoMessageBuilder.PlayerHandToBackEmoji(otherPlayer));
+                message.Append($"{((DiscordPlayer)user).User.Username}: ");
+                message.Append(UnoMessageBuilder.PlayerHandToBackEmoji(user));
                 message.Append('\n');
             }
             message.Append("Here's your current deck:\n");
@@ -419,10 +417,7 @@ public class UnoSlashCommands : ApplicationCommandModule
                 authorImgUrl += ctx.User.AvatarUrl;
                 if (state.OnTable is WildCard { Symbol: WildCardSymbols.PlusFour } or ColorCard { Symbol: ColorCardSymbols.PlusTwo })
                 {
-
-                    var users = Uno.GetDiscordUsers(ctx.Channel.Id);
-                    var whoDrewCards = users.Find(user => users.IndexOf(user) == state.WhoDrewCards.Id);
-                    authorImgUrl = whoDrewCards!.AvatarUrl;
+                    authorImgUrl = ((DiscordPlayer)state.WhoDrewCards).User.AvatarUrl;
                 }
                 embedMessage.WithAuthor(authorTitle, null, authorImgUrl);
 
@@ -456,7 +451,7 @@ public class UnoSlashCommands : ApplicationCommandModule
             {
                 message += $"Color changed to: {state.ColorChanged}\n";
             }
-            if (state is { HasSkipped: true, PreviousPlayer: { } })
+            if (state is { HasSkipped: true, PreviousPlayer: not null })
             {
                 message += $"Player {((DiscordPlayer)state.PreviousPlayer).User.Username} has skipped their turn\n";
             }

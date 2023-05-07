@@ -17,11 +17,11 @@ public class GameSystemBuilder
     protected static readonly List<ICard> AllCards;
     protected readonly List<IPlayer> PlayersByOrder;
 
-    private IDrawStyle? _drawStyle;
-    private IStackStyle? _stackStyle;
-    private bool _mustPlay;
-    private bool _jumpIn;
-    private int _unoPenalty;
+    protected IDrawStyle? DrawStyle;
+    protected IStackStyle? StackStyle;
+    protected bool MustPlay;
+    protected bool JumpIn;
+    protected int UnoPenalty;
 
     static GameSystemBuilder()
     {
@@ -53,11 +53,6 @@ public class GameSystemBuilder
         }
     }
 
-    protected static void ForceCards()
-    {
-
-    }
-
     public GameSystemBuilder()
     {
         PlayersByOrder = new List<IPlayer>(MaxPlayers);
@@ -77,11 +72,11 @@ public class GameSystemBuilder
     {
         if (drawUntilPlayable)
         {
-            _drawStyle = new DrawUntilFound(AllCards, NumberCards);
+            DrawStyle = new DrawUntilFound(AllCards, NumberCards);
         }
         else
         {
-            _drawStyle = new DrawSingle(AllCards, NumberCards);
+            DrawStyle = new DrawSingle(AllCards, NumberCards);
         }
         return this;
     }
@@ -90,35 +85,35 @@ public class GameSystemBuilder
     {
         if (stackPlusTwo)
         {
-            _stackStyle = new StackPlusTwo(_drawStyle!);
+            StackStyle = new StackPlusTwo(DrawStyle!);
         }
         else
         {
-            _stackStyle = new NoStack(_drawStyle!);
+            StackStyle = new NoStack(DrawStyle!);
         }
         return this;
     }
 
     public GameSystemBuilder WithMustPlay(bool mustPlay)
     {
-        _mustPlay = mustPlay;
+        MustPlay = mustPlay;
         return this;
     }
 
     public GameSystemBuilder WithJumpIn(bool jumpIn)
     {
-        _jumpIn = jumpIn;
+        JumpIn = jumpIn;
         return this;
     }
 
     public GameSystemBuilder WithUnoPenalty(int unoPenalty)
     {
-        _unoPenalty = unoPenalty;
+        UnoPenalty = unoPenalty;
         return this;
     }
 
-    public IGameSystem Build()
+    public virtual IGameSystem Build()
     {
-        return new GameSystem(PlayersByOrder, AllCardsDict, _drawStyle!, _mustPlay, _stackStyle!, _jumpIn, _unoPenalty);
+        return new GameSystem(PlayersByOrder, AllCardsDict, DrawStyle!, MustPlay, StackStyle!, JumpIn, UnoPenalty);
     }
 }

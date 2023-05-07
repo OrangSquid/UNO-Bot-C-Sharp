@@ -12,7 +12,7 @@ public class GameSystem : IGameSystem
     private const int CardsPerPlayer = 7;
 
     private readonly Dictionary<string, ICard> _allCardsDict;
-    private readonly List<IPlayer> _playersByOrder;
+    protected readonly List<IPlayer> PlayersByOrder;
     private readonly IDrawStyle _drawStyle;
     private readonly IStackStyle _stackStyle;
     private readonly bool _mustPlay;
@@ -22,11 +22,11 @@ public class GameSystem : IGameSystem
     private GameState _state;
 
     public GameState State => _state;
-    
-    internal GameSystem(List<IPlayer> playersByOrder, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
+
+    protected internal GameSystem(List<IPlayer> playersByOrder, Dictionary<string, ICard> allCardsDict, IDrawStyle drawStyle, bool mustPlay,
         IStackStyle stackStyle, bool jumpIn, int unoPenalty)
     {
-        _playersByOrder = playersByOrder;
+        PlayersByOrder = playersByOrder;
         _allCardsDict = allCardsDict;
         _drawStyle = drawStyle;
         foreach (var player in playersByOrder)
@@ -47,7 +47,7 @@ public class GameSystem : IGameSystem
             startingCard = _drawStyle.Draw();
         }
 
-        _state = new GameState(startingCard, _playersByOrder.First(), _playersByOrder.Count);
+        _state = new GameState(startingCard, PlayersByOrder.First(), PlayersByOrder.Count);
         _mustPlay = mustPlay;
         _stackStyle = stackStyle;
         _jumpIn = jumpIn;
@@ -103,7 +103,7 @@ public class GameSystem : IGameSystem
 
     public IPlayer GetPlayer(int id)
     {
-        return _playersByOrder[id];
+        return PlayersByOrder[id];
     }
 
     public void DrawCard(int playerId)
@@ -221,7 +221,7 @@ public class GameSystem : IGameSystem
                         break;
                     case ColorCardSymbols.Reverse: //Reverses the order of players in the next round
                         ReverseOrder();
-                        if (_playersByOrder.Count == 2)
+                        if (PlayersByOrder.Count == 2)
                             SelectNextPlayer();
                         break;
                     case ColorCardSymbols.PlusTwo: //Next player has to draw 2 cards
@@ -248,8 +248,8 @@ public class GameSystem : IGameSystem
     {
         int playerId = _clockwiseOrder
             ? _state.CurrentPlayer.Id + 1
-            : _state.CurrentPlayer.Id + _playersByOrder.Count - 1;
-        _state.CurrentPlayer = _playersByOrder[playerId % _playersByOrder.Count];
+            : _state.CurrentPlayer.Id + PlayersByOrder.Count - 1;
+        _state.CurrentPlayer = PlayersByOrder[playerId % PlayersByOrder.Count];
     }
 
     /// <summary>
@@ -281,11 +281,11 @@ public class GameSystem : IGameSystem
 
     public IEnumerator<IPlayer> GetEnumerator()
     {
-        return ((IEnumerable<IPlayer>)_playersByOrder).GetEnumerator();
+        return ((IEnumerable<IPlayer>)PlayersByOrder).GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return ((IEnumerable)_playersByOrder).GetEnumerator();
+        return ((IEnumerable)PlayersByOrder).GetEnumerator();
     }
 }

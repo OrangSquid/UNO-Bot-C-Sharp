@@ -18,7 +18,6 @@ public class CardAutocompleteProvider : IAutocompleteProvider
         };
     }
 
-
     public async Task<IEnumerable<DiscordAutoCompleteChoice>> Provider(AutocompleteContext ctx)
     {
         var ulw = ctx.Services.GetService<UnoLibWrapper>();

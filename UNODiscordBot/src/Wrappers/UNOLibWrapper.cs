@@ -8,13 +8,13 @@ namespace UNODiscordBot.Wrappers;
 public class UnoLibWrapper
 {
     private readonly Dictionary<ulong, List<DiscordUser>> _channelLobbies;
-    private readonly Dictionary<ulong, GameStruct> _channelGames;
+    private readonly Dictionary<ulong, GameSystemWrapper> _channelGames;
     private readonly Dictionary<ulong, GameSettings> _channelSettings;
 
     public UnoLibWrapper()
     {
         _channelLobbies = new Dictionary<ulong, List<DiscordUser>>();
-        _channelGames = new Dictionary<ulong, GameStruct>();
+        _channelGames = new Dictionary<ulong, GameSystemWrapper>();
         _channelSettings = new Dictionary<ulong, GameSettings>();
     }
 
@@ -153,58 +153,50 @@ public class UnoLibWrapper
             .WithUnoPenalty(_channelSettings[channelId].UnoPenalty)
             .Build();
 
-        _channelGames.Add(channelId, new GameStruct()
-        {
-            Gs = gs,
-            Players = lobby
-        });
+        _channelGames.Add(channelId, (gs as GameSystemWrapper)!);
         _channelLobbies.Remove(channelId);
         return gs.State;
     }
 
-    public IPlayer GetPlayer(ulong channelId, DiscordUser player)
-    {
-        var game = GetGame(channelId);
-        return GetPlayer(game, player);
-    }
+    public IPlayer GetPlayer(ulong channelId, DiscordUser player) => GetGame(channelId).GetPlayer(player);
 
     public GameState PlayCard(ulong channelId, DiscordUser player, string card)
     {
         var game = GetGame(channelId);
-        game.Gs.CardPlay(GetPlayerId(game, player), card);
+        game.CardPlay(GetPlayerId(game, player), card);
 
-        if (game.Gs.State.GameFinished)
+        if (game.State.GameFinished)
             EndGame(channelId, player);
 
-        return game.Gs.State;
+        return game.State;
     }
 
     public GameState DrawCard(ulong channelId, DiscordUser player)
     {
         var game = GetGame(channelId);
-        game.Gs.DrawCard(GetPlayerId(game, player));
-        return game.Gs.State;
+        game.DrawCard(GetPlayerId(game, player));
+        return game.State;
     }
 
     public GameState ChangeColor(ulong channelId, DiscordUser player, string color)
     {
         var game = GetGame(channelId);
-        game.Gs.ChangeOnTableColor(GetPlayerId(game, player), color);
-        return game.Gs.State;
+        game.ChangeOnTableColor(GetPlayerId(game, player), color);
+        return game.State;
     }
 
     public GameState Skip(ulong channelId, DiscordUser player)
     {
         var game = GetGame(channelId);
-        game.Gs.Skip(GetPlayerId(game, player));
-        return game.Gs.State;
+        game.Skip(GetPlayerId(game, player));
+        return game.State;
     }
 
     public void EndGame(ulong channelId, DiscordUser player)
     {
         _channelLobbies.TryGetValue(channelId, out var lobby);
         _channelGames.TryGetValue(channelId, out var game);
-        if (lobby == null && game.Gs == null)
+        if (lobby == null && game == null)
         {
             throw new GameDoesNotExistException();
         }
@@ -212,35 +204,17 @@ public class UnoLibWrapper
         {
             throw new PlayerDoesNotExistException();
         }
-        if (game.Gs != null && game.Players.IndexOf(player) == -1)
-        {
-            throw new PlayerDoesNotExistException();
-        }
+        game?.GetPlayer(player);
         _channelGames.Remove(channelId);
         _channelLobbies.Remove(channelId);
     }
 
-    private IPlayer GetPlayer(GameStruct game, DiscordUser player)
+    private int GetPlayerId(GameSystemWrapper game, DiscordUser player)
     {
-        return game.Gs.GetPlayer(GetPlayerId(game, player));
+        return game.GetPlayer(player).Id;
     }
 
-    private int GetPlayerId(GameStruct game, DiscordUser player)
-    {
-        int playerId = game.Players.IndexOf(player);
-        if (playerId == -1)
-        {
-            throw new PlayerDoesNotExistException();
-        }
-        return playerId;
-    }
-    internal List<DiscordUser> GetDiscordUsers(ulong channelId)
-    {
-        var game = GetGame(channelId);
-        return game.Players;
-    }
-
-    private GameStruct GetGame(ulong channelId)
+    internal GameSystemWrapper GetGame(ulong channelId)
     {
         if (!_channelGames.TryGetValue(channelId, out var game))
         {
